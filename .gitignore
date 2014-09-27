@@ -2,3 +2,5 @@
 assignment2/BlockingMPI/Makefile
 
 assignment2/Serial/matmul.o
+
+assignment2/Serial/Makefile
