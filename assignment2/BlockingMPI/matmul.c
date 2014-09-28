@@ -27,7 +27,7 @@ void initRowBlk(int sizeA, int sizeC, double** A, double** C)
     *C = (double *) calloc(sizeC, sizeof(double));//result mat
 
     // This assumes A is stored by rows, and B is stored by columns
-    for (i=0; i<sizeA; i++) (*A)[i] = 1.1;
+    for (i=0; i<sizeA; i++) (*A)[i] = 1.0;
 
 }
 
@@ -39,7 +39,7 @@ void initColBlk(int sizeB, double** B)
     *B = (double *) calloc(sizeB, sizeof(double));//upper triangular mat
 
     // This assumes A is stored by rows, and B is stored by columns
-    for (i=0; i<sizeB; i++) (*B)[i] = 2.1;
+    for (i=0; i<sizeB; i++) (*B)[i] = 1.0;
     
 }
 
@@ -50,37 +50,27 @@ void matFree(double* A, double* B, double* C)
     free(C);
 }
 
-double matmul(int N, int rank, int blockSize, double* A, double* B, double* C) {
-
-/*
-  This is the serial program for CPSC424/524 Assignment #2.
-
-  Author: Andrew Sherman, Yale University
-
-  Date: 9/14/2014
-
-*/
-
+double matmul(int blockSize, int sizeA, int sizeB, double** A, double** B, double** C) 
+{
   int i, j, k;
   int iA, iB, iC;
+  int a1,b1;
   double wctime0, wctime1, cputime;
 
   timing(&wctime0, &cputime);
 
 // This loop computes the matrix-matrix product
   iC = 0;
-  if( N!=0 ){
-      for (i=0; i<N; i++) {
-        iA = i*(i+1)/2;
-        for (j=0; j<N; j++,iC++) {
-          iB = j*(j+1)/2;
-          C[iC] = 0.;
-          for (k=0; k<=MIN(i,j); k++) C[iC] += A[iA+k] * B[iB+k]; 
-        }
-      }
-  }else{
+  a1 = (sizeA + 1 -blockSize)/blockSize-1;
+  b1 = (sizeB + 1 -blockSize)/blockSize-1;
+  for (i=a1; i<a1+blockSize; i++) {
+    //iA = i*(i+1)/2;
+    for (j=b1; j<b1+blockSize; j++,iC++) {
+      //iB = j*(j+1)/2;
+      (*C)[iC] = 0.;
+      for (k=0; k<=MIN(i,j); k++) (*C)[iC] += (*A)[k] * (*B)[k]; 
+    }
   }
-
   timing(&wctime1, &cputime);
   return(wctime1 - wctime0);
 }
