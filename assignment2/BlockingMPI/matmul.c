@@ -18,36 +18,29 @@ int calcSize(int rank, int blockSize)
     return sizeAB;
 }
 
-int initRowBlk(int N, int rank, int blockSize, double* A, double* C)
+void initRowBlk(int sizeA, int sizeC, double** A, double** C)
 {
 
-    int i, sizeAB, sizeC;
+    int i;
     
-    sizeAB = calcSize(rank, blockSize);
-    sizeC = blockSize*N; // All of C will be nonzero, in general!
-
-    A = (double *) calloc(sizeAB, sizeof(double));//lower triangular mat
-    C = (double *) calloc(sizeC, sizeof(double));//result mat
+    *A = (double *) calloc(sizeA, sizeof(double));//lower triangular mat
+    *C = (double *) calloc(sizeC, sizeof(double));//result mat
 
     // This assumes A is stored by rows, and B is stored by columns
-    for (i=0; i<sizeAB; i++) A[i] = 1.1;
+    for (i=0; i<sizeA; i++) (*A)[i] = 1.1;
 
-    return sizeAB;
 }
 
-int initColBlk(int rank, int blockSize, double* B)
+void initColBlk(int sizeB, double** B)
 {
 
-    int i, sizeAB;
+    int i;
     
-    sizeAB = calcSize(rank, blockSize);
-
-    B = (double *) calloc(sizeAB, sizeof(double));//upper triangular mat
+    *B = (double *) calloc(sizeB, sizeof(double));//upper triangular mat
 
     // This assumes A is stored by rows, and B is stored by columns
-    for (i=0; i<sizeAB; i++) B[i] = 2.1;
+    for (i=0; i<sizeB; i++) (*B)[i] = 2.1;
     
-    return sizeAB;
 }
 
 void matFree(double* A, double* B, double* C)
