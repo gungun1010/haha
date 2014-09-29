@@ -50,26 +50,32 @@ void matFree(double* A, double* B, double* C)
     free(C);
 }
 
-double matmul(int blockSize, int sizeA, int sizeB, double** A, double** B, double** C) 
+double matmul(int rankA, int rankB, int cCol, int blockSize, int sizeA, int sizeB, double** A, double** B, double** C) 
 {
   int i, j, k;
-  int iA, iB, iC;
+  int iA, jB, iC;
   int a1,b1;
   double wctime0, wctime1, cputime;
 
   timing(&wctime0, &cputime);
 
-// This loop computes the matrix-matrix product
-  iC = 0;
-  a1 = (sizeA + 1 -blockSize)/blockSize-1;
-  b1 = (sizeB + 1 -blockSize)/blockSize-1;
-  for (i=a1; i<a1+blockSize; i++) {
-    //iA = i*(i+1)/2;
-    for (j=b1; j<b1+blockSize; j++,iC++) {
-      //iB = j*(j+1)/2;
-      (*C)[iC] = 0.;
-      for (k=0; k<=MIN(i,j); k++) (*C)[iC] += (*A)[k] * (*B)[k]; 
-    }
+  //this algorithm is modified from the serial version
+  //a1 and b1 are the first element of a number series [1,2,3,4,5...n]
+  //the a1 and b1 equation are drived from arithmatic sequence equation:
+  //an = a1 + (n-1)*d; Sn = n*(a1+an)/2; 
+  // n -> blockSize; d -> 1; Sn -> sizeAB;
+  a1 = (2*sizeA/blockSize - blockSize + 1)/2;
+  b1 = (2*sizeB/blockSize - blockSize + 1)/2;
+  
+  iA = rankB;//row entry in each block depends on the tag of B mat
+  iC = iA*blockSize;//row entry offset based on the blocksize
+  for (i=a1; i<a1+blockSize; i++, iA++) {
+      jB =0;
+      for (j=b1; j<b1+blockSize; j++,jB++) {
+          (*C)[iC+jB] = 0.;
+          for (k=0; k<MIN(i,j); k++) (*C)[iC+jB] += (*A)[k] * (*B)[k]; 
+      }
+      iC+=cCol;//line up the offsets for next result
   }
   timing(&wctime1, &cputime);
   return(wctime1 - wctime0);

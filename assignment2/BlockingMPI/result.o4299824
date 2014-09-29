@@ -1,0 +1,29 @@
+/lustre/home/client/fas/cpsc424/lly6
+/lustre/home/client/fas/cpsc424/lly6/assignment2/BlockingMPI
+compute-74-16
+compute-74-16
+0: element = 1.000000
+0: element = 1.000000
+0: element = 0.000000
+0: element = 0.000000
+rank 1, size A = 7
+received block B 1.000000 at process 1
+1: element = 3.000000
+1: element = 3.000000
+1: element = 0.000000
+1: element = 0.000000
+
+blockingMPI:18024 terminated with signal 11 at PC=2b4375de91d9 SP=7fff97f0ae40.  Backtrace:
+/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(opal_memory_ptmalloc2_int_free+0x159)[0x2b4375de91d9]
+/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(opal_memory_ptmalloc2_free+0xb0)[0x2b4375deaeb0]
+/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(orte_rml_oob_send+0x314)[0x2b4375db3e04]
+/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(orte_rml_oob_send_buffer+0x85)[0x2b4375db3ab5]
+/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(+0x1e12d0)[0x2b4375d782d0]
+/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(ompi_mpi_finalize+0x195)[0x2b4375c29c95]
+blockingMPI(main+0x2f5)[0x401095]
+/lib64/libc.so.6(__libc_start_main+0xfd)[0x3720a1ecdd]
+blockingMPI[0x400cd9]
+=>> PBS: job killed: walltime 145 exceeded limit 120
+mpiexec: killing job...
+
+[compute-74-16.local:18022] [[6676,0],0]-[[6676,1],1] mca_oob_tcp_msg_recv: readv failed: Connection reset by peer (104)
