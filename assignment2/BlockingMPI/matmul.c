@@ -5,6 +5,17 @@
 //avoid implicit declaration
 void timing(double* wcTime, double* cpuTime);
 
+void printMat(int size, double** mat){
+    int i,j;
+
+    for(i=0; i<size; i++){
+        for(j=0; j<size; j++){
+            printf(" %.2f ",(*mat)[i*size+j]);
+        }
+        printf("\n");
+    }
+}
+
 int calcSize(int rank, int blockSize)
 {
     int n;

@@ -2,7 +2,6 @@
 #include "matmul.h"
 
 main(int argc, char **argv) {
-
     int N, i, run, blockSize, sizeA,sizeB,sizeC;
     double *A, *B, *C, *ArowBlock, *BcolBlock, *CrowBlock;
 
@@ -78,13 +77,18 @@ main(int argc, char **argv) {
                 MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, rank+1, srcRank, MPI_COMM_WORLD);
                 free(BcolBlock);
             }
-
-
+            
+            
+            C = (double *)calloc(N*N, sizeof(double));
+            MPI_Allgather(CrowBlock,sizeC, MPI_DOUBLE, C, sizeC, MPI_DOUBLE, MPI_COMM_WORLD);
+           
+            printMat(N,&C);
+/*
             //FIXME debug prints
             printf("rank %d :",rank);
             for(i=0; i<sizeC; i++)
                 printf(" %.2f ",CrowBlock[i]);
-            printf("\n");
+            printf("\n");*/
         }
     }
     //if im worker for the master
@@ -142,12 +146,11 @@ main(int argc, char **argv) {
                     srcRank = procNum-1;
                 }
             }
-            //FIXME debug prints
-            printf("rank %d :",rank);
-            for(i=0; i<sizeC; i++)
-                printf(" %.2f ",CrowBlock[i]);
-            printf("\n");
             
+            C = (double *)calloc(N*N, sizeof(double));
+            MPI_Allgather(CrowBlock,sizeC, MPI_DOUBLE, C, sizeC, MPI_DOUBLE, MPI_COMM_WORLD);
+            
+            printMat(N, &C);
         }
     }
     
