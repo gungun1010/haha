@@ -1,23 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stddef.h>
-#include <string.h>
-#include <math.h>
 #include "mpi.h"
-
-#define MAT_SIZE 3
-#define NUM_PROCESSORS 3
-//FIXME, way too many int passing here
-double matmul(int rankA, int rankB, int cCol, int blockSize, int sizeA, int sizeB, double**, double**, double**);
-
-int calcSize(int rank, int blockSize);
-
-//initialize the matrix here
-void initRowBlk(int sizeA, int sizeB, double** A, double** C);
-
-void initColBlk(int sizeB, double** B);
-
-void matFree(double* A, double* B, double* C);
+#include "matmul.h"
 
 main(int argc, char **argv) {
 
@@ -27,7 +9,8 @@ main(int argc, char **argv) {
     int sizes[1];//matrix size
     int p[1];//number of processors 
     double wctime, sparm;
-    int rank, procNum, type=99;
+    int rank, procNum;
+    int srcRank, destRank;
     double worktime;
     MPI_Status status;  
 
@@ -52,38 +35,56 @@ main(int argc, char **argv) {
             //init A row block and C row block for this process (rank 0)
             //C row block has constant size, calculated insize initRowBlk()
             sizeA = calcSize(rank, blockSize);
-            printf("rank %d, size A = %d\n",rank,sizeA);
             sizeC = blockSize * N; 
+            
             //init row block A and C based on sizeA and sizeC
             initRowBlk(sizeA, sizeC, &ArowBlock, &CrowBlock);
             
-            //send B column block (rank i) to each process with rank i
-            for(i=1;i<procNum;i++){
+            //send B column block (tag = i) to each process with rank i
+            for(i=rank;i<procNum;i++){
 
                 //variable sizeAB due to different row and col blocks each processor handles
                 sizeB = calcSize(i, blockSize); 
                 initColBlk(sizeB, &BcolBlock);
                 
-                MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, i, type, MPI_COMM_WORLD);
+                //using target rank as tag
+                MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, i, i, MPI_COMM_WORLD);
                 
                 //recycle B column block memories
                 free(BcolBlock);
             }
             
             //variable sizeAB due to different row and col blocks each processor handles
-            //after MPI_Send, work on my own task, the rank=0 
+            //after MPI_Send, work on my own task, rank=0
             sizeB = calcSize(rank, blockSize); 
             initColBlk(sizeB, &BcolBlock);
+
+            wctime = matmul(rank,N,blockSize,sizeA,sizeB,&ArowBlock,&BcolBlock,&CrowBlock);
             
-            wctime = matmul(rank, rank, N, blockSize, sizeA, sizeB, &ArowBlock, &BcolBlock, &CrowBlock);
+            //this B Column block belongs to master, so the tag is master's rank
+            MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, rank+1, rank, MPI_COMM_WORLD);
+            free(BcolBlock);
+            
+             
+            for(srcRank=procNum-1; srcRank>0; srcRank--){                 
+                sizeB = calcSize(srcRank, blockSize); 
+                initColBlk(sizeB, &BcolBlock);
+                
+                //recall: I use rank # as my tag, but master only receives message from last worker
+                MPI_Recv(BcolBlock, sizeB, MPI_DOUBLE,procNum-1,srcRank,MPI_COMM_WORLD,&status);
+                
+                wctime = matmul(srcRank,N,blockSize,sizeA,sizeB,&ArowBlock,&BcolBlock,&CrowBlock);
+                //this B Column block belongs to MPI src, so the tag is MPI src's rank
+                MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, rank+1, srcRank, MPI_COMM_WORLD);
+                free(BcolBlock);
+            }
+
+
+            //FIXME debug prints
+            printf("rank %d :",rank);
             for(i=0; i<sizeC; i++)
-                printf("0: element = %f\n",CrowBlock[i]);
-            //MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, rank+1, type, MPI_COMM_WORLD);
-/*
-            printf ("  %4d     %9.4f\n", N, wctime);
-            printf (" serial results: %f\n", C[N*N-1]);
-            printf (" ------------------------\n");
-*/
+                printf(" %.2f ",CrowBlock[i]);
+            printf("\n");
         }
     }
     //if im worker for the master
@@ -99,31 +100,54 @@ main(int argc, char **argv) {
             //init A row block and C row block for this process (rank 0)
             //C row block has constant size, calculated insize initRowBlk()
             sizeA = calcSize(rank, blockSize);
-            printf("rank %d, size A = %d\n",rank,sizeA);
             sizeC = blockSize * N; 
+            
             //init row block A and C based on size
             initRowBlk(sizeA, sizeC, &ArowBlock, &CrowBlock);
             
             //variable sizeAB due to different row and col blocks each processor handles
             sizeB = calcSize(rank, blockSize); 
-            
             BcolBlock = (double *)calloc(sizeB, sizeof(double));
             
-            MPI_Recv(BcolBlock, sizeB, MPI_DOUBLE, 0, type, MPI_COMM_WORLD, &status);
-            printf("received block B %f at process %d\n", BcolBlock[0],rank);
+            //recall: I use rank # as my tag 
+            MPI_Recv(BcolBlock, sizeB, MPI_DOUBLE, 0, rank, MPI_COMM_WORLD, &status);
                        
-            wctime = matmul(rank, rank, N,blockSize,sizeA,sizeB,&ArowBlock, &BcolBlock, &CrowBlock);
-            for(i=0; i<sizeC; i++)
-                printf("%d: element = %f\n",rank, CrowBlock[i]);
+            wctime = matmul(rank,N,blockSize,sizeA,sizeB,&ArowBlock, &BcolBlock, &CrowBlock);
             
-            /*
-            if(rank == procNum-1){
-                MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, 0, MPI_COMM_WORLD); 
-            }else{
-                MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, rank+1, MPI_COMM_WORLD);
-            }
-            */
+            //we need to wrap around the message passing
+            destRank = rank == procNum -1 ? 0 : rank+1;
+            
+            //this B Column block belongs to this worker, so the tag is worker's rank
+            MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, destRank, rank, MPI_COMM_WORLD); 
             free(BcolBlock);
+            
+            srcRank=rank-1;              
+            while(srcRank!=rank){    
+                sizeB = calcSize(srcRank, blockSize); 
+                initColBlk(sizeB, &BcolBlock);
+                
+                //recall: I use rank # as my tag 
+                MPI_Recv(BcolBlock, sizeB, MPI_DOUBLE,rank-1,srcRank,MPI_COMM_WORLD,&status);
+
+                wctime = matmul(srcRank,N,blockSize,sizeA,sizeB,&ArowBlock,&BcolBlock,&CrowBlock);
+                //we need to wrap around the message passing
+                destRank = rank == procNum -1 ? 0 : rank+1;
+
+                //this B Column block belongs to MPI src, so the tag is MPI src's rank
+                MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, destRank, srcRank, MPI_COMM_WORLD);
+                free(BcolBlock);
+                if(srcRank != 0){
+                    srcRank--;
+                }else{
+                    srcRank = procNum-1;
+                }
+            }
+            //FIXME debug prints
+            printf("rank %d :",rank);
+            for(i=0; i<sizeC; i++)
+                printf(" %.2f ",CrowBlock[i]);
+            printf("\n");
+            
         }
     }
     

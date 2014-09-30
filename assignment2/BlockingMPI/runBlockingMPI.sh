@@ -11,4 +11,4 @@ pwd
 cd $PBS_O_WORKDIR
 pwd
 cat $PBS_NODEFILE
-time mpiexec -n 2 blockingMPI
+time mpiexec -n 4 blockingMPI

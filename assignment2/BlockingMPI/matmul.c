@@ -1,7 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+#include "matmul.h"
 
 //#include "timing.h"
 #define MIN(a,b) (((a)<(b))?(a):(b))
@@ -50,7 +47,7 @@ void matFree(double* A, double* B, double* C)
     free(C);
 }
 
-double matmul(int rankA, int rankB, int cCol, int blockSize, int sizeA, int sizeB, double** A, double** B, double** C) 
+double matmul(int rankB, int cCol, int blockSize, int sizeA, int sizeB, double** A, double** B, double** C) 
 {
   int i, j, k;
   int iA, jB, iC;
@@ -75,7 +72,7 @@ double matmul(int rankA, int rankB, int cCol, int blockSize, int sizeA, int size
           (*C)[iC+jB] = 0.;
           for (k=0; k<MIN(i,j); k++) (*C)[iC+jB] += (*A)[k] * (*B)[k]; 
       }
-      iC+=cCol;//line up the offsets for next result
+      iC+=cCol;//line up the offsets for next result if available
   }
   timing(&wctime1, &cputime);
   return(wctime1 - wctime0);
