@@ -14,6 +14,9 @@ void initRowBlk(int sizeA, int sizeB, double** A, double** C);
 
 void initColBlk(int sizeB, double** B);
 
+
+void initAnC(int rank, int blockSize, int N, int* sizeAref,int* sizeCref, double** A, double** C);
+
 void printMat(int size, double** mat);
 
 void matFree(double* A, double* B, double* C);

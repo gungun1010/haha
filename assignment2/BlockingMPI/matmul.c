@@ -58,6 +58,16 @@ void matFree(double* A, double* B, double* C)
     free(C);
 }
 
+void initAnC(int rank, int blockSize, int N, int* sizeAref,int* sizeCref, double** A, double** C){
+    //init A row block and C row block for this process (rank 0)
+    //C row block has constant size, calculated insize initRowBlk()
+    *sizeAref = calcSize(rank, blockSize);
+    *sizeCref = blockSize * N; 
+    
+    //init row block A and C based on sizeA and sizeC
+    initRowBlk(*sizeAref, *sizeCref, A, C);
+}
+
 double matmul(int rankB, int cCol, int blockSize, int sizeA, int sizeB, double** A, double** B, double** C) 
 {
   int i, j, k;

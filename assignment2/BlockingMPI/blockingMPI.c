@@ -1,8 +1,9 @@
 #include "mpi.h"
 #include "matmul.h"
+#include "mpiWrappers.h"
 
 #define MAT_SIZE 80
-#define NUM_PROCESSORS 2
+#define NUM_PROCESSORS 8
 
 main(int argc, char **argv) {
     int N, i, run, blockSize, sizeA,sizeB,sizeC,sizeT;
@@ -15,15 +16,12 @@ main(int argc, char **argv) {
     double worktime;
     MPI_Status status;  
 
-    MPI_Init(&argc, &argv);
-
-    MPI_Comm_size(MPI_COMM_WORLD,&procNum); // Get # of processes from MPI commnad
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank); // Which process am I?
+    init(&argc, &argv, &procNum, &rank);
 
     /* If I am the master (rank 0) ... */
     if (rank == 0) {
         //sparm = 0; //initialize the workers' work times 
-        MPI_Barrier(MPI_COMM_WORLD); //wait for everyone to be ready before starting timer
+        barrier(); //wait for everyone to be ready before starting timer
         wctime = 0.0;
         sizes[0]=MAT_SIZE;
         p[0]=NUM_PROCESSORS;  
@@ -32,36 +30,19 @@ main(int argc, char **argv) {
         for (run=0; run<1; run++) {
             N = sizes[run];//matrix size
             blockSize = N/p[run];//# of rows/cols per block A/:q
-           
-            //init A row block and C row block for this process (rank 0)
-            //C row block has constant size, calculated insize initRowBlk()
-            sizeA = calcSize(rank, blockSize);
-            sizeC = blockSize * N; 
             
-            //init row block A and C based on sizeA and sizeC
-            initRowBlk(sizeA, sizeC, &ArowBlock, &CrowBlock);
-            //send B column block (tag = i) to each process with rank i
-            for(i=rank;i<procNum;i++){
+            //initialize A and C row block
+            initAnC(rank, blockSize, N, &sizeA, &sizeC, &ArowBlock, &CrowBlock);
 
-                //variable sizeAB due to different row and col blocks each processor handles
-                sizeB = calcSize(i, blockSize); 
-                initColBlk(sizeB, &BcolBlock);
-                
-                //using target rank as tag
-                MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, i, i, MPI_COMM_WORLD);
-                
-                //recycle B column block memories
-                free(BcolBlock);
-            }
-            
+            //distribute B Col block to each of the workers
+            distributeB(rank, procNum, blockSize, &BcolBlock);
             printf("%d finished sending block B\n",rank);
-            //variable sizeAB due to different row and col blocks each processor handles
-            //after MPI_Send, work on my own task, rank=0
             
             //this B Column block belongs to master, so the tag is master's rank
             sizeB = calcSize(rank, blockSize); 
             initColBlk(sizeB, &BcolBlock);
             
+            //after MPI_Send, work on my own task, rank=0
             wctime += matmul(rank,N,blockSize,sizeA,sizeB,&ArowBlock,&BcolBlock,&CrowBlock);
             printf("%d finished self calc\n",rank);            
             
@@ -97,16 +78,17 @@ main(int argc, char **argv) {
             printf("%d completed\n",rank);
             
             C = (double *)malloc(N*N*sizeof(double));
-            MPI_Barrier(MPI_COMM_WORLD); //wait for everyone to be ready before starting
+            
+            barrier(); //wait for everyone to be ready before starting
             MPI_Gather(CrowBlock,sizeC, MPI_DOUBLE, C, sizeC, MPI_DOUBLE,0,MPI_COMM_WORLD);
-            MPI_Barrier(MPI_COMM_WORLD); //wait for everyone to be ready before starting
+            barrier(); //wait for everyone to be ready before starting
             //printf("%d spent %.2f seconds to get val = %.2f", rank, wctime, C[N*N-1]);
         }
         printMat(N,&C);
     }
     //if im worker for the master
     else{
-        MPI_Barrier(MPI_COMM_WORLD); //wait for everyone to be ready before starting
+        barrier(); //wait for everyone to be ready before starting
         
         wctime = 0.0;
         sizes[0]=MAT_SIZE;
@@ -116,14 +98,9 @@ main(int argc, char **argv) {
         for (run=0; run<1; run++) {
             N = sizes[run];//matrix size
             blockSize = N/p[run];//# of rows and cols per block A and B
-           
-            //init A row block and C row block for this process (rank 0)
-            //C row block has constant size, calculated insize initRowBlk()
-            sizeA = calcSize(rank, blockSize);
-            sizeC = blockSize * N; 
             
-            //init row block A and C based on size
-            initRowBlk(sizeA, sizeC, &ArowBlock, &CrowBlock);
+            //initialize A and C row block
+            initAnC(rank, blockSize, N, &sizeA, &sizeC, &ArowBlock, &CrowBlock);
             
             //variable sizeAB due to different row and col blocks each processor handles
             sizeB = calcSize(rank, blockSize); 
@@ -189,9 +166,9 @@ main(int argc, char **argv) {
             printf("%d completed\n",rank);
             
             C = (double *)malloc(N*N*sizeof(double));
-            MPI_Barrier(MPI_COMM_WORLD); //wait for everyone to be ready before starting
+            barrier(); //wait for everyone to be ready before starting
             MPI_Gather(CrowBlock,sizeC, MPI_DOUBLE, C, sizeC, MPI_DOUBLE,0,MPI_COMM_WORLD);
-            MPI_Barrier(MPI_COMM_WORLD); //wait for everyone to be ready before starting
+            barrier(); //wait for everyone to be ready before starting
         }
     }
     
