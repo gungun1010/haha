@@ -1,17 +1,16 @@
 #include "mpi.h"
 #include "matmul.h"
 
-#define MAT_SIZE 68
+#define MAT_SIZE 10
 #define NUM_PROCESSORS 2
 
 main(int argc, char **argv) {
-    int N, i, run, blockSize, sizeA,sizeB,sizeC;
-    double *A, *B, *C, *ArowBlock, *BcolBlock, *CrowBlock;
-
+    int N, i, run, blockSize, sizeA,sizeB,sizeC,sizeT;
+    double *C,*ArowBlock,*BtempBlock,*BcolBlock,*CrowBlock;
     int sizes[1];//matrix size
     int p[1];//number of processors 
     double wctime, sparm;
-    int rank, procNum;
+    int rank, procNum, ringTag;
     int srcRank, destRank;
     double worktime;
     MPI_Status status;  
@@ -27,11 +26,11 @@ main(int argc, char **argv) {
         MPI_Barrier(MPI_COMM_WORLD); //wait for everyone to be ready before starting timer
         wctime = 0.0;
         sizes[0]=MAT_SIZE;
-        p[0]=NUM_PROCESSORS;   
+        p[0]=NUM_PROCESSORS;  
+        ringTag = 100; 
         
         
         for (run=0; run<1; run++) {
-            printf("%d start\n",rank);     
             N = sizes[run];//matrix size
             blockSize = N/p[run];//# of rows/cols per block A/:q
            
@@ -42,7 +41,6 @@ main(int argc, char **argv) {
             
             //init row block A and C based on sizeA and sizeC
             initRowBlk(sizeA, sizeC, &ArowBlock, &CrowBlock);
-            printf("%d finished initRowBlk\n",rank);
             //send B column block (tag = i) to each process with rank i
             for(i=rank;i<procNum;i++){
 
@@ -60,36 +58,39 @@ main(int argc, char **argv) {
             printf("%d finished sending block B\n",rank);
             //variable sizeAB due to different row and col blocks each processor handles
             //after MPI_Send, work on my own task, rank=0
+            
+            //this B Column block belongs to master, so the tag is master's rank
             sizeB = calcSize(rank, blockSize); 
             initColBlk(sizeB, &BcolBlock);
-
-            MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, rank+1, rank, MPI_COMM_WORLD);
-            printf("%d finished sending self B(%d)\n",rank,sizeB);
             
             wctime += matmul(rank,N,blockSize,sizeA,sizeB,&ArowBlock,&BcolBlock,&CrowBlock);
             printf("%d finished self calc\n",rank);            
-            //this B Column block belongs to master, so the tag is master's rank
-            free(BcolBlock);
-
+            
+            MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, rank+1, rank, MPI_COMM_WORLD);
+            printf("%d sending a B to %d with tag %d\n",rank, rank+1, rank); 
+            free(BcolBlock); //up to here, B column block buffer has done its job
             
             for(srcRank=procNum-1; srcRank>0; srcRank--){                 
                 printf("%d waiting for  %d's B\n",rank, srcRank);
-                sizeB = calcSize(srcRank, blockSize); 
-                BcolBlock = (double *)malloc(sizeB*sizeof(double));
-                printf("%d predicts sizeB = %d\n",rank, sizeB);
+                sizeT = calcSize(srcRank, blockSize); 
+                BtempBlock = (double *)malloc(sizeT*sizeof(double));
+                printf("%d predicts sizeB = %d\n",rank, sizeT);
                 //recall: I use rank # as my tag, but master only receives message from last worker
-                MPI_Recv(BcolBlock, sizeB, MPI_DOUBLE,procNum-1,srcRank,MPI_COMM_WORLD,&status);
+                MPI_Recv(BtempBlock, sizeT, MPI_DOUBLE,procNum-1,srcRank,MPI_COMM_WORLD,&status);
                 printf("%d status.Error = %d\n",rank,status.MPI_ERROR);
                 printf("%d status.MPI_TAG = %d\n",rank,status.MPI_TAG);
                 printf("%d status.MPI_SOURCE = %d\n",rank,status.MPI_SOURCE);
-                printf("%d b ",rank);
+                
+                
+                //NOTE the differences here, im passing Temp B buffer instead of B Column buff
+                wctime += matmul(srcRank,N,blockSize,sizeA,sizeT,&ArowBlock,&BtempBlock,&CrowBlock);
                 //this B Column block belongs to MPI src, so the tag is MPI src's rank
+                //we dont send this B back to the original owner
                 if(srcRank != rank+1){
-                    MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, rank+1, srcRank, MPI_COMM_WORLD);
-                    printf("c");
+                    printf("%d sending a B to %d with rank %d\n",rank, rank+1, srcRank); 
+                    MPI_Send(BtempBlock, sizeT, MPI_DOUBLE, rank+1, srcRank, MPI_COMM_WORLD);
                 }
 
-                wctime += matmul(srcRank,N,blockSize,sizeA,sizeB,&ArowBlock,&BcolBlock,&CrowBlock);
                 printf("d");
                 free(BcolBlock);
                 printf("e\n");
@@ -106,11 +107,11 @@ main(int argc, char **argv) {
     else{
         MPI_Barrier(MPI_COMM_WORLD); //wait for everyone to be ready before starting
         
-        printf("%d start\n",rank);     
         wctime = 0.0;
         sizes[0]=MAT_SIZE;
         p[0]=NUM_PROCESSORS;   
-        
+        ringTag = 100;
+         
         for (run=0; run<1; run++) {
             N = sizes[run];//matrix size
             blockSize = N/p[run];//# of rows and cols per block A and B
@@ -123,54 +124,53 @@ main(int argc, char **argv) {
             //init row block A and C based on size
             initRowBlk(sizeA, sizeC, &ArowBlock, &CrowBlock);
             
-            printf("%d finished initRowBlk\n",rank);
             //variable sizeAB due to different row and col blocks each processor handles
             sizeB = calcSize(rank, blockSize); 
             BcolBlock = (double *)malloc(sizeB*sizeof(double));
             
-            //recall: I use rank # as my tag 
+            //receive my own B column block 
             MPI_Recv(BcolBlock, sizeB, MPI_DOUBLE, 0, rank, MPI_COMM_WORLD, &status);
             printf("%d status.Error = %d\n",rank,status.MPI_ERROR);
             printf("%d status.MPI_TAG = %d\n",rank,status.MPI_TAG);
             printf("%d status.MPI_SOURCE = %d\n",rank,status.MPI_SOURCE);
             printf("%d received its own B\n",rank);           
-            //we need to wrap around the message passing
-            destRank = (rank == procNum -1) ? 0 : rank+1;
-            printf("%d sending own B to %d\n",rank, destRank); 
-            //this B Column block belongs to this worker, so the tag is worker's rank
-            MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, destRank, rank, MPI_COMM_WORLD); 
-            printf("%d sending a B to %d with tag %d \n",rank,destRank,rank);
             
+            //self calculation
             wctime += matmul(rank,N,blockSize,sizeA,sizeB,&ArowBlock, &BcolBlock, &CrowBlock);
-            
             printf("%d finished self calc\n",rank);            
-            free(BcolBlock);
-            
+
             srcRank=rank-1;              
-            while(srcRank!=rank){    
+            while(srcRank!=rank){
+                
                 printf("%d waiting for  %d's B\n",rank, srcRank);
-                sizeB = calcSize(srcRank, blockSize); 
-                BcolBlock = (double *)malloc(sizeB*sizeof(double));
+                sizeT = calcSize(srcRank, blockSize); 
+                BtempBlock = (double *)malloc(sizeT*sizeof(double));
                 
                 printf("%d predicts sizeB = %d\n",rank, sizeB);
                 //recall: I use rank # as my tag 
-                MPI_Recv(BcolBlock, sizeB, MPI_DOUBLE,rank-1,srcRank,MPI_COMM_WORLD,&status);
+                MPI_Recv(BtempBlock, sizeT, MPI_DOUBLE,rank-1,srcRank,MPI_COMM_WORLD,&status);
                 printf("%d status.Error = %d\n",rank,status.MPI_ERROR);
                 printf("%d status.MPI_TAG = %d\n",rank,status.MPI_TAG);
                 printf("%d status.MPI_SOURCE = %d\n",rank,status.MPI_SOURCE);
                 
                 //we need to wrap around the message passing
                 destRank = (rank == procNum -1) ? 0 : rank+1;
-                if(destRank != srcRank){
-                    //this B Column block belongs to MPI src, so the tag is MPI src's rank
-                    MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, destRank, srcRank, MPI_COMM_WORLD);
-                    
-                    printf("%d sending a B to %d with tag %d \n",rank,destRank,srcRank);
+                
+                //SEND MY BLOCK UPON RECEIVE my predecessor's block
+                if(srcRank == rank-1){
+                    MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, destRank, rank, MPI_COMM_WORLD); 
+                    free(BcolBlock);
                 }
-                wctime += matmul(srcRank,N,blockSize,sizeA,sizeB,&ArowBlock,&BcolBlock,&CrowBlock);
-                printf("%d d ",rank);
-                free(BcolBlock);
-                printf("%d e\n",rank);
+                
+                //do calc based on newly arrived block
+                wctime += matmul(srcRank,N,blockSize,sizeA,sizeT,&ArowBlock,&BtempBlock,&CrowBlock);
+
+                //this B Column block belongs to MPI src, so the tag is MPI src's rank
+                //we dont send this B back to the original owner
+                if(destRank != srcRank && srcRank != rank-1){
+                    printf("%d sending a B to %d with tag %d\n",rank, destRank, srcRank); 
+                    MPI_Send(BtempBlock, sizeT, MPI_DOUBLE, destRank, srcRank, MPI_COMM_WORLD);
+                }
                 if(srcRank != 0){
                     srcRank--;
                 }else{
