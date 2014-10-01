@@ -1,6 +1,6 @@
 #!/bin/bash
-#PBS -l procs=8,tpn=8,mem=46gb
-#PBS -l walltime=15:00
+#PBS -l procs=1,tpn=1,mem=46gb
+#PBS -l walltime=20:00
 #PBS -N result
 #PBS -r n
 #PBS -j oe
@@ -11,4 +11,4 @@ pwd
 cd $PBS_O_WORKDIR
 pwd
 cat $PBS_NODEFILE
-time mpiexec -n 8 blockingMPI
+./serial

@@ -31,8 +31,8 @@ void initRowBlk(int sizeA, int sizeC, double** A, double** C)
 
     int i;
     
-    *A = (double *) calloc(sizeA, sizeof(double));//lower triangular mat
-    *C = (double *) calloc(sizeC, sizeof(double));//result mat
+    *A = (double *) malloc(sizeA*sizeof(double));//lower triangular mat
+    *C = (double *) malloc(sizeC*sizeof(double));//result mat
 
     // This assumes A is stored by rows, and B is stored by columns
     for (i=0; i<sizeA; i++) (*A)[i] = 1.0;
@@ -44,7 +44,7 @@ void initColBlk(int sizeB, double** B)
 
     int i;
     
-    *B = (double *) calloc(sizeB, sizeof(double));//upper triangular mat
+    *B = (double *) malloc(sizeB*sizeof(double));//upper triangular mat
 
     // This assumes A is stored by rows, and B is stored by columns
     for (i=0; i<sizeB; i++) (*B)[i] = 1.0;

@@ -4,8 +4,6 @@
 #include <string.h>
 #include <math.h>
 
-#define MAT_SIZE 4
-#define NUM_PROCESSORS 4
 //FIXME, way too many int passing here
 double matmul(int rankB, int cCol, int blockSize, int sizeA, int sizeB, double**, double**, double**);
 
