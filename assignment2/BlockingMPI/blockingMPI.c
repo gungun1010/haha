@@ -1,8 +1,8 @@
 #include "mpi.h"
 #include "matmul.h"
 
-#define MAT_SIZE 10
-#define NUM_PROCESSORS 2
+#define MAT_SIZE 80
+#define NUM_PROCESSORS 4
 
 main(int argc, char **argv) {
     int N, i, run, blockSize, sizeA,sizeB,sizeC,sizeT;
@@ -10,8 +10,8 @@ main(int argc, char **argv) {
     int sizes[1];//matrix size
     int p[1];//number of processors 
     double wctime, sparm;
-    int rank, procNum, ringTag;
-    int srcRank, destRank;
+    int rank, procNum;
+    int srcRank, destRank,sendTag;
     double worktime;
     MPI_Status status;  
 
@@ -27,7 +27,6 @@ main(int argc, char **argv) {
         wctime = 0.0;
         sizes[0]=MAT_SIZE;
         p[0]=NUM_PROCESSORS;  
-        ringTag = 100; 
         
         
         for (run=0; run<1; run++) {
@@ -87,21 +86,23 @@ main(int argc, char **argv) {
                 //this B Column block belongs to MPI src, so the tag is MPI src's rank
                 //we dont send this B back to the original owner
                 if(srcRank != rank+1){
-                    printf("%d sending a B to %d with rank %d\n",rank, rank+1, srcRank); 
+                    printf("%d sending a B to %d with tag %d\n",rank, rank+1, srcRank); 
                     MPI_Send(BtempBlock, sizeT, MPI_DOUBLE, rank+1, srcRank, MPI_COMM_WORLD);
                 }
 
                 printf("d");
-                free(BcolBlock);
+                free(BtempBlock);
                 printf("e\n");
             }
             printf("%d completed\n",rank);
             
             C = (double *)malloc(N*N*sizeof(double));
+            MPI_Barrier(MPI_COMM_WORLD); //wait for everyone to be ready before starting
             MPI_Gather(CrowBlock,sizeC, MPI_DOUBLE, C, sizeC, MPI_DOUBLE,0,MPI_COMM_WORLD);
-            printf("%d spent %.2f seconds to get val = %.2f", rank, wctime, C[N*N-1]);
+            MPI_Barrier(MPI_COMM_WORLD); //wait for everyone to be ready before starting
+            //printf("%d spent %.2f seconds to get val = %.2f", rank, wctime, C[N*N-1]);
         }
-        //printMat(N,&C);
+        printMat(N,&C);
     }
     //if im worker for the master
     else{
@@ -110,7 +111,7 @@ main(int argc, char **argv) {
         wctime = 0.0;
         sizes[0]=MAT_SIZE;
         p[0]=NUM_PROCESSORS;   
-        ringTag = 100;
+        
          
         for (run=0; run<1; run++) {
             N = sizes[run];//matrix size
@@ -139,48 +140,58 @@ main(int argc, char **argv) {
             wctime += matmul(rank,N,blockSize,sizeA,sizeB,&ArowBlock, &BcolBlock, &CrowBlock);
             printf("%d finished self calc\n",rank);            
 
-            srcRank=rank-1;              
+            srcRank=rank-1;
+            sendTag=rank;              
             while(srcRank!=rank){
                 
                 printf("%d waiting for  %d's B\n",rank, srcRank);
                 sizeT = calcSize(srcRank, blockSize); 
                 BtempBlock = (double *)malloc(sizeT*sizeof(double));
                 
-                printf("%d predicts sizeB = %d\n",rank, sizeB);
+                printf("%d predicts sizeB = %d\n",rank, sizeT);
                 //recall: I use rank # as my tag 
                 MPI_Recv(BtempBlock, sizeT, MPI_DOUBLE,rank-1,srcRank,MPI_COMM_WORLD,&status);
                 printf("%d status.Error = %d\n",rank,status.MPI_ERROR);
                 printf("%d status.MPI_TAG = %d\n",rank,status.MPI_TAG);
                 printf("%d status.MPI_SOURCE = %d\n",rank,status.MPI_SOURCE);
                 
+                //do calc based on newly arrived block
+                wctime += matmul(srcRank,N,blockSize,sizeA,sizeT,&ArowBlock,&BtempBlock,&CrowBlock);
                 //we need to wrap around the message passing
                 destRank = (rank == procNum -1) ? 0 : rank+1;
                 
-                //SEND MY BLOCK UPON RECEIVE my predecessor's block
-                if(srcRank == rank-1){
-                    MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, destRank, rank, MPI_COMM_WORLD); 
+                if(destRank != sendTag){
+                    //this B Column block belongs to MPI src, so the tag is MPI src's rank
+                    //we dont send this B back to the original owner
+                    printf("%d sending a B to %d with tag %d\n",rank, destRank, sendTag); 
+                    MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, destRank, sendTag, MPI_COMM_WORLD); 
                     free(BcolBlock);
                 }
                 
-                //do calc based on newly arrived block
-                wctime += matmul(srcRank,N,blockSize,sizeA,sizeT,&ArowBlock,&BtempBlock,&CrowBlock);
-
-                //this B Column block belongs to MPI src, so the tag is MPI src's rank
-                //we dont send this B back to the original owner
-                if(destRank != srcRank && srcRank != rank-1){
-                    printf("%d sending a B to %d with tag %d\n",rank, destRank, srcRank); 
-                    MPI_Send(BtempBlock, sizeT, MPI_DOUBLE, destRank, srcRank, MPI_COMM_WORLD);
-                }
+                sizeB = sizeT;
+                BcolBlock = (double *)malloc(sizeB*sizeof(double));
+                memcpy(BcolBlock, BtempBlock, sizeB);
+                
                 if(srcRank != 0){
                     srcRank--;
                 }else{
                     srcRank = procNum-1;
                 }
+                
+                if(sendTag != 0){
+                    sendTag--;
+                }else{
+                    sendTag = procNum-1;
+                }
+                
+                free(BtempBlock);
             }
             printf("%d completed\n",rank);
             
             C = (double *)malloc(N*N*sizeof(double));
+            MPI_Barrier(MPI_COMM_WORLD); //wait for everyone to be ready before starting
             MPI_Gather(CrowBlock,sizeC, MPI_DOUBLE, C, sizeC, MPI_DOUBLE,0,MPI_COMM_WORLD);
+            MPI_Barrier(MPI_COMM_WORLD); //wait for everyone to be ready before starting
         }
     }
     
