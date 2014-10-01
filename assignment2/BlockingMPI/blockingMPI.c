@@ -2,7 +2,7 @@
 #include "matmul.h"
 
 #define MAT_SIZE 80
-#define NUM_PROCESSORS 4
+#define NUM_PROCESSORS 2
 
 main(int argc, char **argv) {
     int N, i, run, blockSize, sizeA,sizeB,sizeC,sizeT;
