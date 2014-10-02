@@ -18,6 +18,8 @@ void initColBlk(int sizeB, double** B);
 void initAnC(int rank, int blockSize, int N, int* sizeAref,int* sizeCref, double** A, double** C);
 
 void printMat(int size, double** mat);
+void debugPrints(double** matRef, int size, int rank);
+void updateIndx(int* i, int procNum);
 
 void matFree(double* A, double* B, double* C);
 

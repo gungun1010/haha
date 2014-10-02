@@ -31,8 +31,8 @@ void initRowBlk(int sizeA, int sizeC, double** A, double** C)
 
     int i;
     
-    *A = (double *) malloc(sizeA*sizeof(double));//lower triangular mat
-    *C = (double *) malloc(sizeC*sizeof(double));//result mat
+    *A = (double *) calloc(sizeA,sizeof(double));//lower triangular mat
+    *C = (double *) calloc(sizeC,sizeof(double));//result mat
 
     // This assumes A is stored by rows, and B is stored by columns
     for (i=0; i<sizeA; i++) (*A)[i] = 1.0;
@@ -44,13 +44,20 @@ void initColBlk(int sizeB, double** B)
 
     int i;
     
-    *B = (double *) malloc(sizeB*sizeof(double));//upper triangular mat
+    *B = (double *) calloc(sizeB,sizeof(double));//upper triangular mat
 
     // This assumes A is stored by rows, and B is stored by columns
     for (i=0; i<sizeB; i++) (*B)[i] = 1.0;
     
 }
 
+void updateIndx(int* i, int procNum){
+    if(*i != 0){
+        (*i)--;
+    }else{
+        *i = procNum-1;
+    }
+}
 void matFree(double* A, double* B, double* C)
 {
     free(A);
@@ -68,6 +75,14 @@ void initAnC(int rank, int blockSize, int N, int* sizeAref,int* sizeCref, double
     initRowBlk(*sizeAref, *sizeCref, A, C);
 }
 
+void debugPrints(double** matRef, int size, int rank){
+    int i;
+    printf("%d : ",rank);
+    for(i = 0; i<size; i++){
+        printf("%.2f ", (*matRef)[i]);
+    }
+    printf("\n");
+}
 double matmul(int rankB, int cCol, int blockSize, int sizeA, int sizeB, double** A, double** B, double** C) 
 {
   int i, j, k;
@@ -85,16 +100,18 @@ double matmul(int rankB, int cCol, int blockSize, int sizeA, int sizeB, double**
   a1 = (2*sizeA/blockSize - blockSize + 1)/2;
   b1 = (2*sizeB/blockSize - blockSize + 1)/2;
   
-  iA = rankB;//row entry in each block depends on the tag of B mat
+  iA = rankB;//col entry in each block depends on the tag of B mat
   iC = iA*blockSize;//row entry offset based on the blocksize
   for (i=a1; i<a1+blockSize; i++, iA++) {
       jB =0;
       for (j=b1; j<b1+blockSize; j++,jB++) {
           (*C)[iC+jB] = 0.;
           for (k=0; k<MIN(i,j); k++) (*C)[iC+jB] += (*A)[k] * (*B)[k]; 
+          //printf("%.1f %.1f %.1f\n",(*C)[iC+jB],(*A)[k],(*B)[k]);
       }
       iC+=cCol;//line up the offsets for next result if available
   }
+  //debugPrints(C, blockSize * 3, rankB);
   timing(&wctime1, &cputime);
   return(wctime1 - wctime0);
 }

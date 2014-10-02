@@ -1,9 +1,6 @@
 #include "mpi.h"
 #include "matmul.h"
 
-#define MAT_SIZE 80
-#define NUM_PROCESSORS 2
-
 //MPI initialization function
 void init(int* argcRef, char ***argvRef, int* procNumRef, int* rankRef){
     
@@ -15,6 +12,12 @@ void init(int* argcRef, char ***argvRef, int* procNumRef, int* rankRef){
 
 void barrier(){
     MPI_Barrier(MPI_COMM_WORLD); //wait for everyone to be ready before starting timer
+}
+
+void gather(double** rowMatRef, int sizeC, double** Cref){
+     barrier(); //wait for everyone to be ready before starting
+     MPI_Gather(*rowMatRef,sizeC,MPI_DOUBLE,*Cref,sizeC,MPI_DOUBLE,0,MPI_COMM_WORLD);
+     barrier(); //wait for everyone to be ready before starting
 }
 
 void distributeB(int rank, int procNum, int blockSize, double** Bref){
