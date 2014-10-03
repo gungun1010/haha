@@ -23,6 +23,7 @@ void gather(double** rowMatRef, int sizeC, double** Cref){
 void distributeB(int rank, int procNum, int blockSize, double** Bref, MPI_Request* requestRef){
     int i;
     int sizeB;
+    
     //column block (tag = i) to each process with rank i
     for(i=rank+1;i<procNum;i++){
 

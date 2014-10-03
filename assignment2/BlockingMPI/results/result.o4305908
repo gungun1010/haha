@@ -1,0 +1,9 @@
+/lustre/home/client/fas/cpsc424/lly6
+/lustre/home/client/fas/cpsc424/lly6/assignment2/BlockingMPI
+compute-74-16
+0 calculating mat
+proc 0: N = 4000, p = 1, C[N*N-1]=4000.000000, wctime = 89.1370
+
+real	1m29.436s
+user	1m29.236s
+sys	0m0.096s

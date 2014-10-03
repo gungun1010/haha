@@ -2,7 +2,7 @@
 #include "matmul.h"
 #include "mpiWrappers.h"
 
-#define MAT_SIZE 8000
+#define MAT_SIZE 2000
 #define NUM_PROCESSORS 2
 
 main(int argc, char **argv) {
@@ -31,11 +31,9 @@ main(int argc, char **argv) {
             N = sizes[run];//matrix size
             blockSize = N/p[run];//# of rows/cols per block A/:q
             
-            //printf("%d init A, C\n",rank); 
             //initialize A and C row block
             initAnC(rank, blockSize, N, &sizeA, &sizeC, &ArowBlock, &CrowBlock);
-            
-            //printf("%d, distribute B\n",rank); 
+
             //distribute B Col block to each of the workers
             distributeB(rank, procNum, blockSize, &BcolBlock,&request);
             
@@ -43,7 +41,6 @@ main(int argc, char **argv) {
             sizeB = calcSize(rank, blockSize); 
             initColBlk(sizeB, &BcolBlock);
             
-            //printf("%d send msg",rank);  
             if(procNum > 1){ 
                 MPI_Isend(BcolBlock, sizeB, MPI_DOUBLE, rank+1, rank, MPI_COMM_WORLD, &request);
             }

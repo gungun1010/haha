@@ -1,0 +1,6 @@
+/lustre/home/client/fas/cpsc424/lly6
+/lustre/home/client/fas/cpsc424/lly6/assignment2/NonBlockingMPI
+compute-74-14
+=>> PBS: job killed: walltime 925 exceeded limit 900
+mpiexec: killing job...
+

@@ -2,7 +2,7 @@
 #include "matmul.h"
 #include "mpiWrappers.h"
 
-#define MAT_SIZE 400
+#define MAT_SIZE 8000
 #define NUM_PROCESSORS 1
 
 main(int argc, char **argv) {
@@ -39,7 +39,7 @@ main(int argc, char **argv) {
             //distribute B Col block to each of the workers
             distributeB(rank, procNum, blockSize, &BcolBlock);
             
-            //printf("%d calculating mat\n",rank);
+            printf("%d calculating mat\n",rank);
             //this B Column block belongs to master, so the tag is master's rank
             sizeB = calcSize(rank, blockSize); 
             initColBlk(sizeB, &BcolBlock);
@@ -50,11 +50,9 @@ main(int argc, char **argv) {
             if(procNum > 1){ 
                 //printf("%d send my B Col\n",rank); 
                 MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, rank+1, rank, MPI_COMM_WORLD);
-            }else{
-                //printf("%d send my B Col\n",rank); 
-                MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, rank, rank, MPI_COMM_WORLD);
             }
-                free(BcolBlock); //up to here, B column block buffer has done its job
+
+            free(BcolBlock); //up to here, B column block buffer has done its job
             
             for(srcRank=procNum-1; srcRank>0; srcRank--){                 
                 //printf("waiting for %d",srcRank);
