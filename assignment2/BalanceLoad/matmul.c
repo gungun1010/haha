@@ -10,7 +10,7 @@ void printMat(int size, double** mat){
 
     for(i=0; i<size; i++){
         for(j=0; j<size; j++){
-            printf(" %.2f ",(*mat)[i*size+j]);
+            printf(" %.5f ",(*mat)[i*size+j]);
         }
         printf("\n");
     }
@@ -37,6 +37,7 @@ void initRowBlk(int sizeA, int sizeC, double** A, double** C)
     srand(12345);
     // This assumes A is stored by rows, and B is stored by columns
     for (i=0; i<sizeA; i++) (*A)[i] = ((double) rand()/(double)RAND_MAX);
+    //for (i=0; i<sizeA; i++) (*A)[i] = 1.0;
 
 }
 
@@ -50,6 +51,7 @@ void initColBlk(int sizeB, double** B)
     srand(12345);
     // This assumes A is stored by rows, and B is stored by columns
     for (i=0; i<sizeB; i++) (*B)[i] = ((double) rand()/(double)RAND_MAX);
+    //for (i=0; i<sizeB; i++) (*B)[i] = 2.0;
     
 }
 

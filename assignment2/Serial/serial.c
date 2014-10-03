@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
     double *A, *B, *C;
     int sizeAB, sizeC, iA, iB, iC;
 
-    int sizes[4]={100,200,400,800};
+    int sizes[4]={8,8,8,8};
     
     double wctime;
 
@@ -38,8 +38,8 @@ int main(int argc, char **argv) {
         srand(12345); // Use a standard seed value for reproducibility
 
         // This assumes A is stored by rows, and B is stored by columns. Other storage schemes are permitted
-        for (i=0; i<sizeAB; i++) A[i] = 1.1;
-        for (i=0; i<sizeAB; i++) B[i] = 2.1;
+        for (i=0; i<sizeAB; i++) A[i] = ((double) rand()/(double)RAND_MAX);
+        for (i=0; i<sizeAB; i++) B[i] = ((double) rand()/(double)RAND_MAX);
 
         wctime = matmul(N, A, B, C);
 

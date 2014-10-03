@@ -2,8 +2,8 @@
 #include "matmul.h"
 #include "mpiWrappers.h"
 
-#define MAT_SIZE 2000
-#define NUM_PROCESSORS 2
+#define MAT_SIZE 8
+#define NUM_PROCESSORS 1
 
 main(int argc, char **argv) {
     int N, i, run, blockSize, sizeA,sizeB,sizeC,sizeT;
@@ -33,16 +33,13 @@ main(int argc, char **argv) {
             
             //initialize A and C row block
             initAnC(rank, blockSize, N, &sizeA, &sizeC, &ArowBlock, &CrowBlock);
-
-            //distribute B Col block to each of the workers
-            distributeB(rank, procNum, blockSize, &BcolBlock,&request);
             
             //this B Column block belongs to master, so the tag is master's rank
             sizeB = calcSize(rank, blockSize); 
             initColBlk(sizeB, &BcolBlock);
             
-            if(procNum > 1){ 
-                MPI_Isend(BcolBlock, sizeB, MPI_DOUBLE, rank+1, rank, MPI_COMM_WORLD, &request);
+            if(procNum > 1){
+                MPI_Isend(BcolBlock, sizeB, MPI_DOUBLE, rank+1, rank, MPI_COMM_WORLD, &request)    ;     
             }
             //after MPI_Isend, work on my own task, rank=0
             //parallized matmul and send for large buffer size
@@ -79,7 +76,7 @@ main(int argc, char **argv) {
             gather(&CrowBlock, sizeC, &C); 
             printf("proc %d: N = %d, p = %d, C[N*N-1]=%f, wctime = %.4f\n",rank, N, procNum, C[N*N-1],wctime);
         }
-        //printMat(N,&C);
+        printMat(N,&C);
     }
     //if im worker for the master
     else{
@@ -96,18 +93,12 @@ main(int argc, char **argv) {
             //initialize A and C row block
             initAnC(rank, blockSize, N, &sizeA, &sizeC, &ArowBlock, &CrowBlock);
             
-            //variable sizeAB due to different row and col blocks each processor handles
+            //variable sizeAB due to different rows and cols  each processor handles
             sizeB = calcSize(rank, blockSize); 
-            BcolBlock = (double *)calloc(sizeB,sizeof(double));
+            initColBlk(sizeB, &BcolBlock);
             
-            //receive my own B column block 
-            MPI_Irecv(BcolBlock, sizeB, MPI_DOUBLE, 0, rank, MPI_COMM_WORLD, &request);
-            
-            //must wait for receive to complete,no shortcut here 
-            MPI_Wait(&request, &status);
             //self calculation
             wctime += matmul(rank,N,blockSize,sizeA,sizeB,&ArowBlock, &BcolBlock, &CrowBlock);
-
 
             srcRank=rank-1;//this is for receiving B blocks
             sendTag=rank;//this is for sending B block              
