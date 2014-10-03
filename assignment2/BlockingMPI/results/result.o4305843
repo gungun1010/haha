@@ -1,0 +1,17 @@
+/lustre/home/client/fas/cpsc424/lly6
+/lustre/home/client/fas/cpsc424/lly6/assignment2/BlockingMPI
+compute-74-16
+compute-74-16
+compute-74-16
+compute-74-16
+creating B for 1
+creating B for 2
+creating B for 3
+proc 0: N = 1000, p = 4, C[N*N-1]=1000.000000, wctime = 0.1132
+proc 1: N = 1000, p = 4, wctime = 0.3100
+proc 2: N = 1000, p = 4, wctime = 0.4412
+proc 3: N = 1000, p = 4, wctime = 0.5073
+
+real	0m3.211s
+user	0m4.160s
+sys	0m0.112s

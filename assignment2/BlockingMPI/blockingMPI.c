@@ -2,8 +2,8 @@
 #include "matmul.h"
 #include "mpiWrappers.h"
 
-#define MAT_SIZE 8
-#define NUM_PROCESSORS 8
+#define MAT_SIZE 400
+#define NUM_PROCESSORS 1
 
 main(int argc, char **argv) {
     int N, i, run, blockSize, sizeA,sizeB,sizeC,sizeT;
@@ -47,9 +47,14 @@ main(int argc, char **argv) {
             //after MPI_Send, work on my own task, rank=0
             wctime += matmul(rank,N,blockSize,sizeA,sizeB,&ArowBlock,&BcolBlock,&CrowBlock);
             
-            //printf("%d send my B Col\n",rank); 
-            MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, rank+1, rank, MPI_COMM_WORLD);
-            free(BcolBlock); //up to here, B column block buffer has done its job
+            if(procNum > 1){ 
+                //printf("%d send my B Col\n",rank); 
+                MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, rank+1, rank, MPI_COMM_WORLD);
+            }else{
+                //printf("%d send my B Col\n",rank); 
+                MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, rank, rank, MPI_COMM_WORLD);
+            }
+                free(BcolBlock); //up to here, B column block buffer has done its job
             
             for(srcRank=procNum-1; srcRank>0; srcRank--){                 
                 //printf("waiting for %d",srcRank);

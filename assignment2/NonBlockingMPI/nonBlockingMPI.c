@@ -2,8 +2,8 @@
 #include "matmul.h"
 #include "mpiWrappers.h"
 
-#define MAT_SIZE 8
-#define NUM_PROCESSORS 8
+#define MAT_SIZE 4
+#define NUM_PROCESSORS 1
 
 main(int argc, char **argv) {
     int N, i, run, blockSize, sizeA,sizeB,sizeC,sizeT;
@@ -40,13 +40,18 @@ main(int argc, char **argv) {
             //this B Column block belongs to master, so the tag is master's rank
             sizeB = calcSize(rank, blockSize); 
             initColBlk(sizeB, &BcolBlock);
-           
-            MPI_Isend(BcolBlock, sizeB, MPI_DOUBLE, rank+1, rank, MPI_COMM_WORLD, &request);
+            
+            if(procNum > 1){ 
+                MPI_Isend(BcolBlock, sizeB, MPI_DOUBLE, rank+1, rank, MPI_COMM_WORLD, &request);
+            }else{
+                MPI_Isend(BcolBlock, sizeB, MPI_DOUBLE, rank, rank, MPI_COMM_WORLD, &request);
+            } 
             //after MPI_Isend, work on my own task, rank=0
+            //parallized matmul and send for large buffer size
             wctime += matmul(rank,N,blockSize,sizeA,sizeB,&ArowBlock,&BcolBlock,&CrowBlock);
             
+            MPI_Wait(&request, &status); // wait for send and matmul to finish
             free(BcolBlock); //up to here, B column block buffer has done its job
-            MPI_Wait(&request, &status);
              
             for(srcRank=procNum-1; srcRank>0; srcRank--){                 
                 sizeT = calcSize(srcRank, blockSize); 
@@ -54,16 +59,19 @@ main(int argc, char **argv) {
                 
                 //recall: I use rank # as my tag, but master only receives message from last worker
                 MPI_Irecv(BtempBlock, sizeT, MPI_DOUBLE,procNum-1,srcRank,MPI_COMM_WORLD,&request);
+                //must wait for BtempBlock buffer to be filled before matmul can use it
                 MPI_Wait(&request, &status);
+                
                 //this B Column block belongs to MPI src, so the tag is MPI src's rank
                 //we dont send this B back to the original owner
+                //the Isend() is pipelined with matmul so with larger load, it is parallel
                 if(srcRank != rank+1){
                     MPI_Isend(BtempBlock, sizeT, MPI_DOUBLE, rank+1, srcRank, MPI_COMM_WORLD, &request);
                 }//NOTE the differences here, im passing Temp B buffer instead of B Column buff
                 
                 wctime += matmul(srcRank,N,blockSize,sizeA,sizeT,&ArowBlock,&BtempBlock,&CrowBlock);
-                free(BtempBlock);
                 MPI_Wait(&request, &status);
+                free(BtempBlock);
             }
             
             //collective MPI 
@@ -95,6 +103,7 @@ main(int argc, char **argv) {
             //receive my own B column block 
             MPI_Irecv(BcolBlock, sizeB, MPI_DOUBLE, 0, rank, MPI_COMM_WORLD, &request);
             
+            //must wait for receive to complete,no shortcut here 
             MPI_Wait(&request, &status);
             //self calculation
             wctime += matmul(rank,N,blockSize,sizeA,sizeB,&ArowBlock, &BcolBlock, &CrowBlock);
@@ -118,7 +127,10 @@ main(int argc, char **argv) {
                 MPI_Isend(BcolBlock, sizeB, MPI_DOUBLE, destRank, sendTag, MPI_COMM_WORLD,&request);
                 
                 //do calc based on newly arrived block
+                //parallelized matmul and send for larger blocks
                 wctime += matmul(srcRank,N,blockSize,sizeA,sizeT,&ArowBlock,&BtempBlock,&CrowBlock);
+                //wait for send to complete then we can free the buffer 
+                MPI_Wait(&request, &status);
                 
                 if(destRank != sendTag){
                     free(BcolBlock);
@@ -132,7 +144,6 @@ main(int argc, char **argv) {
                     free(BtempBlock);
                 }
                 
-                MPI_Wait(&request, &status);
             }
             
             //collective MPI    
