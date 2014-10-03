@@ -1,9 +1,8 @@
 #include "mpi.h"
 #include "matmul.h"
 #include "mpiWrappers.h"
+#include "../testEntry/variables.h"
 
-#define MAT_SIZE 1000
-#define NUM_PROCESSORS 8
 
 main(int argc, char **argv) {
     int N, i, run, blockSize, sizeA,sizeB,sizeC,sizeT;

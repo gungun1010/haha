@@ -2,8 +2,8 @@
 #include "matmul.h"
 #include "mpiWrappers.h"
 
-#define MAT_SIZE 8000
-#define NUM_PROCESSORS 1
+//this include is for easy change of variable in the testEntry folder
+#include "../testEntry/variables.h"
 
 main(int argc, char **argv) {
     int N, i, run, blockSize, sizeA,sizeB,sizeC,sizeT;

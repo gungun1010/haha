@@ -1,9 +1,7 @@
 #include "mpi.h"
 #include "matmul.h"
 #include "mpiWrappers.h"
-
-#define MAT_SIZE 8
-#define NUM_PROCESSORS 1
+#include "../testEntry/variables.h"
 
 main(int argc, char **argv) {
     int N, i, run, blockSize, sizeA,sizeB,sizeC,sizeT;
@@ -76,7 +74,7 @@ main(int argc, char **argv) {
             gather(&CrowBlock, sizeC, &C); 
             printf("proc %d: N = %d, p = %d, C[N*N-1]=%f, wctime = %.4f\n",rank, N, procNum, C[N*N-1],wctime);
         }
-        printMat(N,&C);
+        //printMat(N,&C);
     }
     //if im worker for the master
     else{

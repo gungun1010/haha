@@ -34,8 +34,10 @@ void initRowBlk(int sizeA, int sizeC, double** A, double** C)
     *A = (double *) calloc(sizeA,sizeof(double));//lower triangular mat
     *C = (double *) calloc(sizeC,sizeof(double));//result mat
 
+    srand(12345);
     // This assumes A is stored by rows, and B is stored by columns
-    for (i=0; i<sizeA; i++) (*A)[i] = 1.0;
+    for (i=0; i<sizeA; i++) (*A)[i] = ((double) rand()/(double)RAND_MAX);
+    //for (i=0; i<sizeA; i++) (*A)[i] = 1.0;
 
 }
 
@@ -45,9 +47,11 @@ void initColBlk(int sizeB, double** B)
     int i;
     
     *B = (double *) calloc(sizeB,sizeof(double));//upper triangular mat
+    srand(12345);
 
     // This assumes A is stored by rows, and B is stored by columns
-    for (i=0; i<sizeB; i++) (*B)[i] = 1.0;
+    for (i=0; i<sizeB; i++) (*B)[i] = ((double) rand()/(double)RAND_MAX);
+    //for (i=0; i<sizeB; i++) (*B)[i] = 1.0;
     
 }
 
