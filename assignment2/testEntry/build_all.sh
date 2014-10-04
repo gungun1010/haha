@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -q cpsc424
 #PBS -l procs=8,tpn=8,mem=46gb
-#PBS -l walltime=15:00
+#PBS -l walltime=20:00
 #PBS -N result
 #PBS -r n
 #PBS -j oe

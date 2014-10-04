@@ -1,0 +1,99 @@
+****************************************************************************
+*                       making blockingMPI                                 *
+****************************************************************************
+/lustre/home/client/fas/cpsc424/lly6
+/lustre/home/client/fas/cpsc424/lly6/assignment2/testEntry
+rm -f blockingMPI *.o
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c blockingMPI.c
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c matmul.c
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c mpiWrappers.c
+mpicc -o blockingMPI -g -O3 -xHost -fno-alias -std=c99 blockingMPI.o matmul.o mpiWrappers.o /home/fas/hpcprog/ahs3/cpsc424/utils/timing/timing.o
+
+****************************************************************************
+*                        making Non blockingMPI                            *
+****************************************************************************
+/lustre/home/client/fas/cpsc424/lly6/assignment2/BlockingMPI
+/lustre/home/client/fas/cpsc424/lly6/assignment2/testEntry
+rm -f nonBlockingMPI *.o
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c nonBlockingMPI.c
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c matmul.c
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c mpiWrappers.c
+mpicc -o nonBlockingMPI -g -O3 -xHost -fno-alias -std=c99 nonBlockingMPI.o matmul.o mpiWrappers.o /home/fas/hpcprog/ahs3/cpsc424/utils/timing/timing.o
+
+****************************************************************************
+*                        making balance load  non blockingMPI              *
+****************************************************************************
+/lustre/home/client/fas/cpsc424/lly6/assignment2/NonBlockingMPI
+/lustre/home/client/fas/cpsc424/lly6/assignment2/testEntry
+rm -f nonBlockingMPI *.o
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c nonBlockingMPI.c
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c matmul.c
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c mpiWrappers.c
+mpicc -o nonBlockingMPI -g -O3 -xHost -fno-alias -std=c99 nonBlockingMPI.o matmul.o mpiWrappers.o /home/fas/hpcprog/ahs3/cpsc424/utils/timing/timing.o
+
+/lustre/home/client/fas/cpsc424/lly6/assignment2/testEntry
+/lustre/home/client/fas/cpsc424/lly6/assignment2/testEntry
+compute-74-16
+compute-74-16
+compute-74-16
+compute-74-16
+compute-74-16
+compute-74-16
+compute-74-16
+compute-74-16
+
+****************************************************************************
+*                        running  blockingMPI                              *
+****************************************************************************
+creating B for 1
+creating B for 2
+creating B for 3
+creating B for 4
+creating B for 5
+creating B for 6
+creating B for 7
+0 calculating mat
+proc 7: N = 4000, p = 8, wctime = 16.6760
+proc 0: N = 4000, p = 8, C[N*N-1]=1326.605262, wctime = 1.9529
+proc 1: N = 4000, p = 8, wctime = 5.6275
+proc 2: N = 4000, p = 8, wctime = 8.7756
+proc 3: N = 4000, p = 8, wctime = 11.4616
+proc 4: N = 4000, p = 8, wctime = 13.5043
+proc 5: N = 4000, p = 8, wctime = 15.0852
+proc 6: N = 4000, p = 8, wctime = 16.1272
+
+real	1m17.639s
+user	10m8.696s
+sys	0m0.498s
+
+****************************************************************************
+*                        running  non blockingMPI                          *
+****************************************************************************
+proc 0: N = 4000, p = 8, C[N*N-1]=1326.605262, wctime = 1.9535
+proc 1: N = 4000, p = 8, wctime = 5.6277
+proc 2: N = 4000, p = 8, wctime = 8.7758
+proc 3: N = 4000, p = 8, wctime = 11.4148
+proc 4: N = 4000, p = 8, wctime = 13.5041
+proc 5: N = 4000, p = 8, wctime = 15.1213
+proc 6: N = 4000, p = 8, wctime = 16.3221
+proc 7: N = 4000, p = 8, wctime = 16.6545
+
+real	1m16.685s
+user	9m58.724s
+sys	0m0.439s
+
+****************************************************************************
+*                        running  load balance non blocking                *
+****************************************************************************
+proc 2: N = 4000, p = 8, wctime = 8.7922
+proc 3: N = 4000, p = 8, wctime = 11.4269
+proc 4: N = 4000, p = 8, wctime = 13.5492
+proc 5: N = 4000, p = 8, wctime = 15.0769
+proc 6: N = 4000, p = 8, wctime = 16.1410
+proc 7: N = 4000, p = 8, wctime = 16.6569
+proc 0: N = 4000, p = 8, C[N*N-1]=1326.605262, wctime = 1.9537
+proc 1: N = 4000, p = 8, wctime = 5.6338
+
+real	1m17.852s
+user	10m10.259s
+sys	0m0.477s

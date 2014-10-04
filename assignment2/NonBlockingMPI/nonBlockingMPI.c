@@ -81,7 +81,9 @@ main(int argc, char **argv) {
             gather(&CrowBlock, sizeC, &C); 
             printf("proc %d: N = %d, p = %d, C[N*N-1]=%f, wctime = %.4f\n",rank, N, procNum, C[N*N-1],wctime);
         }
-        //printMat(N,&C);
+        if(N <= 18){
+            printMat(N,&C);
+        }
     }
     //if im worker for the master
     else{

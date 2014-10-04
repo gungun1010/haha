@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
     double *A, *B, *C;
     int sizeAB, sizeC, iA, iB, iC;
 
-    int sizes[4]={8,8,8,8};
+    int sizes[4]={1000,2000,3000,4000};
     
     double wctime;
 
@@ -44,7 +44,12 @@ int main(int argc, char **argv) {
         wctime = matmul(N, A, B, C);
 
         printf ("  %4d     %9.4f\n", N, wctime);
-        printf (" serial results: %f\n", C[N*N-1]);
+        for(i=0;i<N;i++){
+            for(j=0;j<N;j++){
+                printf (" %f ", C[i*N+j]);
+            }
+            printf("\n");
+        }
         printf (" ------------------------\n");
 
         free(A);
