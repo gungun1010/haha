@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <stdio.h>
 //#include "timing.h"
 #define MIN(a,b) (((a)<(b))?(a):(b))
 //avoid implicit declaration
@@ -19,7 +21,7 @@ double matmul(int N, double* A, double* B, double* C) {
   double wctime0, wctime1, cputime;
 
   timing(&wctime0, &cputime);
-
+  printf("N = %d\n",N);
 // This loop computes the matrix-matrix product
   iC = 0;
   if( N!=0 ){
@@ -28,7 +30,9 @@ double matmul(int N, double* A, double* B, double* C) {
         for (j=0; j<N; j++,iC++) {
           iB = j*(j+1)/2;
           C[iC] = 0.;
-          for (k=0; k<=MIN(i,j); k++) C[iC] += A[iA+k] * B[iB+k]; 
+          for (k=0; k<=MIN(i,j); k++){
+               C[iC] += A[iA+k] * B[iB+k]; 
+          }
         }
       }
   }else{

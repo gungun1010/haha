@@ -6,8 +6,8 @@
 #include "../testEntry/variables.h"
 
 main(int argc, char **argv) {
-    int N, i, run, blockSize, sizeA,sizeB,sizeC,sizeT;
-    double *C,*ArowBlock,*BtempBlock,*BcolBlock,*CrowBlock;
+    int N, i, run, blockSize, sizeA,sizeB,sizeC,sizeT,offset;
+    double *A,*B,*C,*ArowBlock,*BtempBlock,*BcolBlock,*CrowBlock;
     int sizes[1];//matrix size
     int p[1];//number of processors 
     double wctime, sparm;
@@ -32,22 +32,26 @@ main(int argc, char **argv) {
             blockSize = N/p[run];//# of rows/cols per block A/:q
             
             //printf("%d init A and C\n",rank);
-            //initialize A and C row block
-            initAnC(rank, blockSize, N, &sizeA, &sizeC, &ArowBlock, &CrowBlock);
-            
+            //initialize A,B, C block
+            sizeT = calcSize(rank,N);
+            initAB(sizeT, &A, &B);
             //printf("%d distribute B\n",rank);
             //distribute B Col block to each of the workers
-            distributeB(rank, procNum, blockSize, &BcolBlock);
+            distributeAB(rank, procNum, blockSize, &A, &B);
             
-            printf("%d calculating mat\n",rank);
-            //this B Column block belongs to master, so the tag is master's rank
-            sizeB = calcSize(rank, blockSize); 
+            sizeA = calcSize(rank, blockSize);
+            initRowBlk(sizeA, &ArowBlock);
+            memcpy(ArowBlock, A, sizeA*sizeof(double)); 
+            sizeB = sizeA;
             initColBlk(sizeB, &BcolBlock);
-            
+            memcpy(BcolBlock, B, sizeB*sizeof(double)); 
+            sizeC=blockSize*N;
+            initRowBlk(sizeC, &CrowBlock);
             //after MPI_Send, work on my own task, rank=0
             wctime += matmul(rank,N,blockSize,sizeA,sizeB,&ArowBlock,&BcolBlock,&CrowBlock);
             
             if(procNum > 1){ 
+                //this B Column block belongs to master, so the tag is master's rank
                 //printf("%d send my B Col\n",rank); 
                 MPI_Send(BcolBlock, sizeB, MPI_DOUBLE, rank+1, rank, MPI_COMM_WORLD);
             }
@@ -93,17 +97,18 @@ main(int argc, char **argv) {
             N = sizes[run];//matrix size
             blockSize = N/p[run];//# of rows and cols per block A and B
             
-            //printf("%d init A and C\n",rank);
             //initialize A and C row block
-            initAnC(rank, blockSize, N, &sizeA, &sizeC, &ArowBlock, &CrowBlock);
-            
-            //variable sizeAB due to different row and col blocks each processor handles
-            sizeB = calcSize(rank, blockSize); 
-            BcolBlock = (double *)calloc(sizeB,sizeof(double));
-            
+            sizeA = calcSize(rank, blockSize);
+            initRowBlk(sizeA, &ArowBlock);
+            sizeB = sizeA;
+            initColBlk(sizeB, &BcolBlock);
+            sizeC=blockSize*N;
+            initRowBlk(sizeC, &CrowBlock);
+          
             //printf("%d receiving my B\n",rank);
             //receive my own B column block 
-            MPI_Recv(BcolBlock, sizeB, MPI_DOUBLE, 0, rank, MPI_COMM_WORLD, &status);
+            MPI_Recv(BcolBlock, sizeB, MPI_DOUBLE, 0, rank+0xf000, MPI_COMM_WORLD, &status);
+            MPI_Recv(ArowBlock, sizeA, MPI_DOUBLE, 0, rank+0xe000, MPI_COMM_WORLD, &status);
             
             //printf("%d calculating mat\n",rank);
             //self calculation

@@ -1,0 +1,9 @@
+
+blockingMPI:13955 terminated with signal 11 at PC=2b7c0fdc3a16 SP=7fffb851a5a0.  Backtrace:
+/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(opal_memory_ptmalloc2_int_malloc+0x1d6)[0x2b7c0fdc3a16]
+/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(opal_memory_ptmalloc2_int_memalign+0x6a)[0x2b7c0fdc739a]
+/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(opal_memory_ptmalloc2_memalign+0x6f)[0x2b7c0fdc6f7f]
+/lib64/libc.so.6(__libc_calloc+0x33d)[0x30dfe7939d]
+blockingMPI(main+0x42d)[0x40150d]
+/lib64/libc.so.6(__libc_start_main+0xfd)[0x30dfe1ecdd]
+blockingMPI[0x401019]

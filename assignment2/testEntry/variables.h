@@ -1,2 +1,2 @@
-#define MAT_SIZE 8
+#define MAT_SIZE 2000
 #define NUM_PROCESSORS 8
