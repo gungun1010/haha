@@ -6,7 +6,7 @@
 #include "../testEntry/variables.h"
 
 main(int argc, char **argv) {
-    int N, i, run, blockSize, sizeA,sizeB,sizeC,sizeT,offset;
+    int N, i, run, blockSize, sizeA,sizeB,sizeC,sizeT;
     double *A,*B,*C,*ArowBlock,*BtempBlock,*BcolBlock,*CrowBlock;
     int sizes[1];//matrix size
     int p[1];//number of processors 
@@ -24,18 +24,16 @@ main(int argc, char **argv) {
         barrier(); //wait for everyone to be ready before starting timer
         wctime = 0.0;
         sizes[0]=MAT_SIZE;
-        p[0]=NUM_PROCESSORS;  
+        p[0]=NUM_PROCESSORS;
         
-        //printf("%d is ready\n", rank);        
         for (run=0; run<1; run++) {
             N = sizes[run];//matrix size
             blockSize = N/p[run];//# of rows/cols per block A/:q
             
-            //printf("%d init A and C\n",rank);
             //initialize A,B, C block
             sizeT = calcSize(rank,N);
             initAB(sizeT, &A, &B);
-            //printf("%d distribute B\n",rank);
+            
             //distribute B Col block to each of the workers
             distributeAB(rank, procNum, blockSize, &A, &B);
             
@@ -59,7 +57,6 @@ main(int argc, char **argv) {
             free(BcolBlock); //up to here, B column block buffer has done its job
             
             for(srcRank=procNum-1; srcRank>0; srcRank--){                 
-                //printf("waiting for %d",srcRank);
                 sizeT = calcSize(srcRank, blockSize); 
                 BtempBlock = (double *)calloc(sizeT,sizeof(double));
                 
@@ -67,6 +64,7 @@ main(int argc, char **argv) {
                 MPI_Recv(BtempBlock, sizeT, MPI_DOUBLE,procNum-1,srcRank,MPI_COMM_WORLD,&status);
                 //NOTE the differences here, im passing Temp B buffer instead of B Column buff
                 wctime += matmul(srcRank,N,blockSize,sizeA,sizeT,&ArowBlock,&BtempBlock,&CrowBlock);
+
                 //this B Column block belongs to MPI src, so the tag is MPI src's rank
                 //we dont send this B back to the original owner
                 if(srcRank != rank+1){
@@ -81,7 +79,7 @@ main(int argc, char **argv) {
             gather(&CrowBlock, sizeC, &C); 
             printf("proc %d: N = %d, p = %d, C[N*N-1]=%f, wctime = %.4f\n",rank, N, procNum, C[N*N-1],wctime);
         }
-        if (N <= 18){
+        if(N <= 18){
             printMat(N,&C);
         }
     }
@@ -91,7 +89,6 @@ main(int argc, char **argv) {
         wctime = 0.0;
         sizes[0]=MAT_SIZE;
         p[0]=NUM_PROCESSORS;   
-        //printf("%d is ready\n",rank);
          
         for (run=0; run<1; run++) {
             N = sizes[run];//matrix size
@@ -104,9 +101,7 @@ main(int argc, char **argv) {
             initColBlk(sizeB, &BcolBlock);
             sizeC=blockSize*N;
             initRowBlk(sizeC, &CrowBlock);
-          
-            //printf("%d receiving my B\n",rank);
-            //receive my own B column block 
+            //receive my own A row and B column block 
             MPI_Recv(BcolBlock, sizeB, MPI_DOUBLE, 0, rank+0xf000, MPI_COMM_WORLD, &status);
             MPI_Recv(ArowBlock, sizeA, MPI_DOUBLE, 0, rank+0xe000, MPI_COMM_WORLD, &status);
             
@@ -121,7 +116,6 @@ main(int argc, char **argv) {
             destRank = (rank == procNum -1) ? 0 : rank+1;
             while(srcRank!=rank){
                 
-                //printf("waiting for %d",srcRank);
                 sizeT = calcSize(srcRank, blockSize); 
                 BtempBlock = (double *)calloc(sizeT,sizeof(double));
                 

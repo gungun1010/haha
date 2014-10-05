@@ -20,21 +20,32 @@ void gather(double** rowMatRef, int sizeC, double** Cref){
      barrier(); //wait for everyone to be ready before starting
 }
 
-void distributeB(int rank, int procNum, int blockSize, double** Bref, MPI_Request* requestRef){
+void distributeAB(int rank, int procNum, int blockSize, double** Aref, double** Bref){
     int i;
-    int sizeB;
+    int sizeAB;
+    double* bCol;
+    double* aRow;
+    int bOffset;
+    int aOffset;
+
+    bOffset = calcSize(0,blockSize);
+    aOffset = bOffset;
     //column block (tag = i) to each process with rank i
     for(i=rank+1;i<procNum;i++){
-
         //variable sizeAB due to different row and col blocks each processor handles
-        sizeB = calcSize(i, blockSize); 
-        initColBlk(sizeB, Bref);
+        sizeAB = calcSize(i, blockSize); 
+        initColBlk(sizeAB, &bCol);        
+        sliceBlk(&bOffset, sizeAB, &bCol, Bref); 
         
+        initRowBlk(sizeAB, &aRow);
+        sliceBlk(&aOffset, sizeAB, &aRow, Aref);        
         //using target rank as tag
-        MPI_Send(*Bref, sizeB, MPI_DOUBLE, i, i, MPI_COMM_WORLD);
+        MPI_Send(bCol, sizeAB, MPI_DOUBLE, i, i+0xf000, MPI_COMM_WORLD);
+        MPI_Send(aRow, sizeAB, MPI_DOUBLE, i, i+0xe000, MPI_COMM_WORLD);
         
         //recycle B column block memories
-        free(*Bref);
+        free(bCol);
+        free(aRow);
     }
 }
 

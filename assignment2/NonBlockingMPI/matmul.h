@@ -9,13 +9,13 @@ double matmul(int rankB, int cCol, int blockSize, int sizeA, int sizeB, double**
 
 int calcSize(int rank, int blockSize);
 
+void initAB(int sizeAB, double** A, double** B);
 //initialize the matrix here
-void initRowBlk(int sizeA, int sizeB, double** A, double** C);
+void initRowBlk(int sizeA, double** A);
 
 void initColBlk(int sizeB, double** B);
 
-
-void initAnC(int rank, int blockSize, int N, int* sizeAref,int* sizeCref, double** A, double** C);
+void sliceBlk(int* offset, int sizeAB, double** AB, double** mat);
 
 void printMat(int size, double** mat);
 void debugPrints(double** matRef, int size, int rank);
