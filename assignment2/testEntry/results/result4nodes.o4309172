@@ -3,14 +3,6 @@
 ****************************************************************************
 /lustre/home/client/fas/cpsc424/lly6
 /lustre/home/client/fas/cpsc424/lly6/assignment2/testEntry
-compute-74-16
-compute-74-16
-compute-74-16
-compute-74-16
-compute-74-16
-compute-74-16
-compute-74-16
-compute-74-16
 rm -f blockingMPI *.o
 mpicc -g -O3 -xHost -fno-alias -std=c99 -c blockingMPI.c
 mpicc -g -O3 -xHost -fno-alias -std=c99 -c matmul.c
@@ -22,14 +14,6 @@ mpicc -o blockingMPI -g -O3 -xHost -fno-alias -std=c99 blockingMPI.o matmul.o mp
 ****************************************************************************
 /lustre/home/client/fas/cpsc424/lly6/assignment2/BlockingMPI
 /lustre/home/client/fas/cpsc424/lly6/assignment2/testEntry
-compute-74-16
-compute-74-16
-compute-74-16
-compute-74-16
-compute-74-16
-compute-74-16
-compute-74-16
-compute-74-16
 rm -f nonBlockingMPI *.o
 mpicc -g -O3 -xHost -fno-alias -std=c99 -c nonBlockingMPI.c
 mpicc -g -O3 -xHost -fno-alias -std=c99 -c matmul.c
@@ -41,14 +25,6 @@ mpicc -o nonBlockingMPI -g -O3 -xHost -fno-alias -std=c99 nonBlockingMPI.o matmu
 ****************************************************************************
 /lustre/home/client/fas/cpsc424/lly6/assignment2/NonBlockingMPI
 /lustre/home/client/fas/cpsc424/lly6/assignment2/testEntry
-compute-74-16
-compute-74-16
-compute-74-16
-compute-74-16
-compute-74-16
-compute-74-16
-compute-74-16
-compute-74-16
 rm -f nonBlockingMPI *.o
 mpicc -g -O3 -xHost -fno-alias -std=c99 -c nonBlockingMPI.c
 mpicc -g -O3 -xHost -fno-alias -std=c99 -c matmul.c
@@ -57,83 +33,44 @@ mpicc -o nonBlockingMPI -g -O3 -xHost -fno-alias -std=c99 nonBlockingMPI.o matmu
 
 /lustre/home/client/fas/cpsc424/lly6/assignment2/testEntry
 /lustre/home/client/fas/cpsc424/lly6/assignment2/testEntry
-compute-74-16
-compute-74-16
-compute-74-16
-compute-74-16
-compute-74-16
-compute-74-16
-compute-74-16
-compute-74-16
+compute-74-10
+compute-74-10
+compute-74-5
+compute-74-5
+compute-74-4
+compute-74-4
+compute-74-3
+compute-74-3
 
 ****************************************************************************
 *                        running  blockingMPI                              *
 ****************************************************************************
-creating B for 1
-creating B for 2
-creating B for 3
-creating B for 4
-creating B for 5
-creating B for 6
-creating B for 7
-0 calculating mat
-proc 2: N = 1000, p = 8, wctime = 0.1344
-proc 3: N = 1000, p = 8, wctime = 0.1754
-proc 4: N = 1000, p = 8, wctime = 0.2084
-proc 5: N = 1000, p = 8, wctime = 0.2721
-proc 6: N = 1000, p = 8, wctime = 0.2793
-proc 7: N = 1000, p = 8, wctime = 0.2578
-proc 0: N = 1000, p = 8, C[N*N-1]=330.615386, wctime = 0.0281
-proc 1: N = 1000, p = 8, wctime = 0.0852
+proc 0: N = 1000, p = 8, C[N*N-1]=258.142508, wctime = 0.0306
+proc 1: N = 1000, p = 8, wctime = 0.0917
+proc 6: N = 1000, p = 8, wctime = 0.2507
+proc 4: N = 1000, p = 8, wctime = 0.2096
+proc 3: N = 1000, p = 8, wctime = 0.1770
+proc 2: N = 1000, p = 8, wctime = 0.1364
+proc 5: N = 1000, p = 8, wctime = 0.2343
+proc 7: N = 1000, p = 8, wctime = 0.2584
 
-real	0m2.426s
-user	0m9.413s
-sys	0m0.204s
+real	0m3.696s
+user	0m3.280s
+sys	0m0.107s
 
 ****************************************************************************
 *                        running  non blockingMPI                          *
 ****************************************************************************
-creating B for 1
-creating B for 2
-creating B for 3
-creating B for 4
-creating B for 5
-creating B for 6
-creating B for 7
-0 calculating mat
-proc 3: N = 1000, p = 8, wctime = 0.1754
-proc 4: N = 1000, p = 8, wctime = 0.2083
-proc 5: N = 1000, p = 8, wctime = 0.2330
-proc 6: N = 1000, p = 8, wctime = 0.2495
-proc 7: N = 1000, p = 8, wctime = 0.2575
-proc 0: N = 1000, p = 8, C[N*N-1]=330.615386, wctime = 0.0281
-proc 1: N = 1000, p = 8, wctime = 0.0852
-proc 2: N = 1000, p = 8, wctime = 0.1344
+proc 0: N = 1000, p = 8, C[N*N-1]=258.142508, wctime = 0.0307
+proc 1: N = 1000, p = 8, wctime = 0.0918
+proc 6: N = 1000, p = 8, wctime = 0.2502
+proc 2: N = 1000, p = 8, wctime = 0.1363
+proc 7: N = 1000, p = 8, wctime = 0.2584
+proc 5: N = 1000, p = 8, wctime = 0.2342
+proc 3: N = 1000, p = 8, wctime = 0.1770
+proc 4: N = 1000, p = 8, wctime = 0.2096
 
-real	0m2.380s
-user	0m9.431s
-sys	0m0.201s
+real	0m2.965s
+user	0m1.379s
+sys	0m0.107s
 
-****************************************************************************
-*                        running  load balance non blocking                *
-****************************************************************************
-creating B for 1
-creating B for 2
-creating B for 3
-creating B for 4
-creating B for 5
-creating B for 6
-creating B for 7
-0 calculating mat
-proc 4: N = 1000, p = 8, wctime = 0.2082
-proc 5: N = 1000, p = 8, wctime = 0.2334
-proc 6: N = 1000, p = 8, wctime = 0.2493
-proc 7: N = 1000, p = 8, wctime = 0.2574
-proc 0: N = 1000, p = 8, C[N*N-1]=330.615386, wctime = 0.0281
-proc 1: N = 1000, p = 8, wctime = 0.0853
-proc 2: N = 1000, p = 8, wctime = 0.1344
-proc 3: N = 1000, p = 8, wctime = 0.1754
-
-real	0m2.364s
-user	0m9.366s
-sys	0m0.207s
