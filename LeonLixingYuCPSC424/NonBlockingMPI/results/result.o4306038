@@ -1,0 +1,22 @@
+/lustre/home/client/fas/cpsc424/lly6
+/lustre/home/client/fas/cpsc424/lly6/assignment2/NonBlockingMPI
+compute-74-16
+compute-74-16
+compute-74-16
+compute-74-16
+compute-74-16
+compute-74-16
+compute-74-16
+compute-74-16
+proc 0: N = 4000, p = 8, C[N*N-1]=4000.000000, wctime = 1.9551
+proc 1: N = 4000, p = 8, wctime = 5.6281
+proc 2: N = 4000, p = 8, wctime = 8.7800
+proc 3: N = 4000, p = 8, wctime = 11.4009
+proc 4: N = 4000, p = 8, wctime = 13.5047
+proc 5: N = 4000, p = 8, wctime = 15.0931
+proc 6: N = 4000, p = 8, wctime = 16.1279
+proc 7: N = 4000, p = 8, wctime = 16.6652
+
+real	1m16.496s
+user	10m0.362s
+sys	0m0.490s

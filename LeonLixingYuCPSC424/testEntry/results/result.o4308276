@@ -1,0 +1,83 @@
+****************************************************************************
+*                       making blockingMPI                                 *
+****************************************************************************
+/lustre/home/client/fas/cpsc424/lly6
+/lustre/home/client/fas/cpsc424/lly6/assignment2/testEntry
+rm -f blockingMPI *.o
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c blockingMPI.c
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c matmul.c
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c mpiWrappers.c
+mpicc -o blockingMPI -g -O3 -xHost -fno-alias -std=c99 blockingMPI.o matmul.o mpiWrappers.o /home/fas/hpcprog/ahs3/cpsc424/utils/timing/timing.o
+
+****************************************************************************
+*                        making Non blockingMPI                            *
+****************************************************************************
+/lustre/home/client/fas/cpsc424/lly6/assignment2/BlockingMPI
+/lustre/home/client/fas/cpsc424/lly6/assignment2/testEntry
+rm -f nonBlockingMPI *.o
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c nonBlockingMPI.c
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c matmul.c
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c mpiWrappers.c
+mpicc -o nonBlockingMPI -g -O3 -xHost -fno-alias -std=c99 nonBlockingMPI.o matmul.o mpiWrappers.o /home/fas/hpcprog/ahs3/cpsc424/utils/timing/timing.o
+
+****************************************************************************
+*                        making balance load  non blockingMPI              *
+****************************************************************************
+/lustre/home/client/fas/cpsc424/lly6/assignment2/NonBlockingMPI
+/lustre/home/client/fas/cpsc424/lly6/assignment2/testEntry
+rm -f nonBlockingMPI *.o
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c nonBlockingMPI.c
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c matmul.c
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c mpiWrappers.c
+mpicc -o nonBlockingMPI -g -O3 -xHost -fno-alias -std=c99 nonBlockingMPI.o matmul.o mpiWrappers.o /home/fas/hpcprog/ahs3/cpsc424/utils/timing/timing.o
+
+/lustre/home/client/fas/cpsc424/lly6/assignment2/testEntry
+/lustre/home/client/fas/cpsc424/lly6/assignment2/testEntry
+compute-74-11
+compute-74-11
+compute-74-11
+compute-74-11
+
+****************************************************************************
+*                        running  blockingMPI                              *
+****************************************************************************
+creating B for 1
+creating B for 2
+creating B for 3
+0 calculating mat
+proc 0: N = 4, p = 4, C[N*N-1]=0.264318, wctime = 0.0000
+ 0.03  0.03  0.03  0.03 
+ 0.03  0.19  0.19  0.19 
+ 0.03  0.19  0.22  0.22 
+ 0.03  0.19  0.22  0.26 
+proc 1: N = 4, p = 4, wctime = 0.0000
+proc 2: N = 4, p = 4, wctime = 0.0000
+proc 3: N = 4, p = 4, wctime = 0.0000
+
+real	0m1.730s
+user	0m1.720s
+sys	0m0.094s
+
+****************************************************************************
+*                        running  non blockingMPI                          *
+****************************************************************************
+proc 1: N = 4, p = 4, wctime = 0.0000
+proc 2: N = 4, p = 4, wctime = 0.0000
+proc 3: N = 4, p = 4, wctime = 0.0000
+proc 0: N = 4, p = 4, C[N*N-1]=0.264318, wctime = 0.0000
+
+real	0m1.170s
+user	0m0.063s
+sys	0m0.079s
+
+****************************************************************************
+*                        running  load balance non blocking                *
+****************************************************************************
+proc 0: N = 4, p = 4, C[N*N-1]=0.264318, wctime = 0.0000
+proc 1: N = 4, p = 4, wctime = 0.0000
+proc 2: N = 4, p = 4, wctime = 0.0000
+proc 3: N = 4, p = 4, wctime = 0.0000
+
+real	0m1.171s
+user	0m0.065s
+sys	0m0.080s

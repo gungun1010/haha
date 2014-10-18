@@ -1,0 +1,15 @@
+
+parallel:6232 terminated with signal 11 at PC=2aae822441d9 SP=7fff604ca9d0.  Backtrace:
+/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(opal_memory_ptmalloc2_int_free+0x159)[0x2aae822441d9]
+/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(opal_memory_ptmalloc2_free+0xb0)[0x2aae82245eb0]
+/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(+0x7989e)[0x2aae8206b89e]
+/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(+0xd4479)[0x2aae820c6479]
+/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(mca_btl_openib_finalize+0x3a4)[0x2aae820c4734]
+/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(mca_btl_base_close+0xb5)[0x2aae820b66f5]
+/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(+0x16b2b6)[0x2aae8215d2b6]
+/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(mca_base_components_close+0x85)[0x2aae8224d435]
+/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(mca_pml_base_close+0xf3)[0x2aae821554c3]
+/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(ompi_mpi_finalize+0x3ce)[0x2aae82084ece]
+parallel(main+0x74)[0x401234]
+/lib64/libc.so.6(__libc_start_main+0xfd)[0x30dfe1ecdd]
+parallel[0x4010f9]

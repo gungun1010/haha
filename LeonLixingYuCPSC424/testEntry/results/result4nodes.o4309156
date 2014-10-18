@@ -1,0 +1,76 @@
+****************************************************************************
+*                       making blockingMPI                                 *
+****************************************************************************
+/lustre/home/client/fas/cpsc424/lly6
+/lustre/home/client/fas/cpsc424/lly6/assignment2/testEntry
+rm -f blockingMPI *.o
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c blockingMPI.c
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c matmul.c
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c mpiWrappers.c
+mpicc -o blockingMPI -g -O3 -xHost -fno-alias -std=c99 blockingMPI.o matmul.o mpiWrappers.o /home/fas/hpcprog/ahs3/cpsc424/utils/timing/timing.o
+
+****************************************************************************
+*                        making Non blockingMPI                            *
+****************************************************************************
+/lustre/home/client/fas/cpsc424/lly6/assignment2/BlockingMPI
+/lustre/home/client/fas/cpsc424/lly6/assignment2/testEntry
+rm -f nonBlockingMPI *.o
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c nonBlockingMPI.c
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c matmul.c
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c mpiWrappers.c
+mpicc -o nonBlockingMPI -g -O3 -xHost -fno-alias -std=c99 nonBlockingMPI.o matmul.o mpiWrappers.o /home/fas/hpcprog/ahs3/cpsc424/utils/timing/timing.o
+
+****************************************************************************
+*                        making balance load  non blockingMPI              *
+****************************************************************************
+/lustre/home/client/fas/cpsc424/lly6/assignment2/NonBlockingMPI
+/lustre/home/client/fas/cpsc424/lly6/assignment2/testEntry
+rm -f nonBlockingMPI *.o
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c nonBlockingMPI.c
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c matmul.c
+mpicc -g -O3 -xHost -fno-alias -std=c99 -c mpiWrappers.c
+mpicc -o nonBlockingMPI -g -O3 -xHost -fno-alias -std=c99 nonBlockingMPI.o matmul.o mpiWrappers.o /home/fas/hpcprog/ahs3/cpsc424/utils/timing/timing.o
+
+/lustre/home/client/fas/cpsc424/lly6/assignment2/testEntry
+/lustre/home/client/fas/cpsc424/lly6/assignment2/testEntry
+compute-74-13
+compute-74-13
+compute-74-11
+compute-74-11
+compute-74-9
+compute-74-9
+compute-74-8
+compute-74-8
+
+****************************************************************************
+*                        running  blockingMPI                              *
+****************************************************************************
+proc 1: N = 2000, p = 8, wctime = 0.7053
+proc 0: N = 2000, p = 8, C[N*N-1]=488.366368, wctime = 0.2443
+proc 4: N = 2000, p = 8, wctime = 1.6885
+proc 5: N = 2000, p = 8, wctime = 1.8823
+proc 2: N = 2000, p = 8, wctime = 1.1629
+proc 7: N = 2000, p = 8, wctime = 2.0787
+proc 3: N = 2000, p = 8, wctime = 1.5087
+proc 6: N = 2000, p = 8, wctime = 2.0130
+
+real	0m12.044s
+user	0m20.256s
+sys	0m0.159s
+
+****************************************************************************
+*                        running  non blockingMPI                          *
+****************************************************************************
+proc 0: N = 2000, p = 8, C[N*N-1]=488.366368, wctime = 0.2448
+proc 1: N = 2000, p = 8, wctime = 0.7047
+proc 2: N = 2000, p = 8, wctime = 1.1630
+proc 6: N = 2000, p = 8, wctime = 2.0136
+proc 4: N = 2000, p = 8, wctime = 1.6889
+proc 3: N = 2000, p = 8, wctime = 1.5083
+proc 7: N = 2000, p = 8, wctime = 2.0775
+proc 5: N = 2000, p = 8, wctime = 1.8823
+
+real	0m6.331s
+user	0m10.067s
+sys	0m0.148s
+
