@@ -4,9 +4,33 @@
 #include <math.h>
 
 #define NUM_PROCESSORS 8
-#define LOCATION_TAG 0xB000
-#define VELOCITY_TAG 0xC000
+
+#define TAG_X 0x8000
+#define TAG_Y 0x9000
+#define TAG_Z 0xA000
+
+#define TAG_VX 0xB000
+#define TAG_VY 0xC000
+#define TAG_VZ 0xD000
+
+#define TAG_MASS 0xE000
+
 #define ROOT 0
+
+//data type for each body, contains its location, velocity, and mass
+typedef struct {
+    double *x;
+    double *y;
+    double *z;
+    double *vx;
+    double *vy;
+    double *vz;
+    double *mass;
+
+    //these two are for initial distribution
+    size_t used;
+    size_t size;
+} Body;
 
 // Globals so that we don't need to pass them to functions
 double dt;      //delta t for [t_k, t_k+1]
@@ -25,16 +49,6 @@ double *fy;     // Y velocity array for N bodies
 double *fz;     // Z velocity array for N bodies
 int procNum;    // process number in the communicator
 int rank;       // rank of proc in the communicator
+int *initOctSize; //array of initial size of each octant
+int myInitOctSize; //size of each octant, used in each process   
 
-typedef struct {
-    double *x;
-    double *y;
-    double *z;
-    double *vx;
-    double *vy;
-    double *vz;
-    double *mass;
-
-    size_t used;
-    size_t size;
-} Body;

@@ -13,6 +13,8 @@ void insertBody(Body *a, int i);
 
 void freeBody(Body *a);
 
+void freeOctants(Body **octRef);
+
 void output(int ts);
 
 void force(int body1, int body2, double *deltaf);
@@ -21,6 +23,14 @@ void init(int* argcRef, char ***argvRef, int* procNumRef, int* rankRef);
 
 void initData();
 
+void freeInitData();
+
 void boardcastConsts();
 
-void scatOctants();
+void sliceOctants(Body** oct);
+
+void scatOctants(Body** oct);
+
+void recvBodies(Body* myOct);
+
+void estimateDU(Body* myOct);
