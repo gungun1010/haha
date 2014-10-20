@@ -1,6 +1,10 @@
 #include "functions.h"
 #include "mpi.h"
 
+void barrier(){
+    MPI_Barrier(MPI_COMM_WORLD);
+}
+
 void printOct(Body *a, int i){
     int j;
     printf("octant %d *********************************************************\n",i);
@@ -65,6 +69,18 @@ void freeOctants(Body** octRef){
     for(i=0;i<procNum;i++){
         freeBody(&(*octRef)[i]);
     }
+}
+
+void freeBuffer(){
+    free(massArr);
+    free(xArr);
+    free(yArr);
+    free(zArr);
+    free(vxArr);
+    free(vyArr);
+    free(vzArr);
+    free(displ);
+    free(sizeArr);
 }
 // Function to print center of mass and average velocity
 /*
@@ -186,11 +202,11 @@ void boardcastConsts(){
     MPI_Bcast(&N, 1, MPI_INT, ROOT, MPI_COMM_WORLD);
     MPI_Bcast(&K, 1, MPI_INT, ROOT, MPI_COMM_WORLD);
     MPI_Bcast(&dt, 1, MPI_DOUBLE, ROOT, MPI_COMM_WORLD);
-    //scat initOctSize of each octant for the owner
+    //scat sizeArr of each octant for the owner
     if(rank !=0)
-        initOctSize = calloc(procNum, sizeof(int));
+        sizeArr = calloc(procNum, sizeof(int));
 
-    MPI_Bcast(initOctSize, procNum, MPI_INT, ROOT, MPI_COMM_WORLD);
+    MPI_Bcast(sizeArr, procNum, MPI_INT, ROOT, MPI_COMM_WORLD);
 }
 
 void sliceOctants(Body** oct){
@@ -221,12 +237,12 @@ void sliceOctants(Body** oct){
             insertBody(&(*oct)[7],i);
     }
 
-    initOctSize = calloc(procNum, sizeof(int));
+    sizeArr = calloc(procNum, sizeof(int));
     
     //push each octant size into an array then boardcast the array 
     //i do boardcast instead of scatter since the array is needed for MPI_Scatterv() 
     for(i=0;i<procNum;i++){
-        initOctSize[i]=(*oct)[i].size;
+        sizeArr[i]=(*oct)[i].size;
     }
     
 }
@@ -238,7 +254,7 @@ void prepScat(Body** oct){
 
     //get total number of bodies in the problem
    for (i=0; i<procNum; i++)
-       bodyNum = bodyNum + initOctSize[i];
+       bodyNum = bodyNum + sizeArr[i];
    
    //allocate memory to buffers 
    xArr =(double*) calloc(bodyNum, sizeof(double));      
@@ -271,32 +287,32 @@ void prepScat(Body** oct){
 
 void scatOctants(Body* myOct){
    //allocate coordinates for bodies in the octant 
-   myInitOctSize = initOctSize[rank];
+   mySize = sizeArr[rank];
    
-   myOct->x = (double *) calloc(myInitOctSize, sizeof(double)); 
-   myOct->y = (double *) calloc(myInitOctSize, sizeof(double)); 
-   myOct->z = (double *) calloc(myInitOctSize, sizeof(double)); 
+   myOct->x = (double *) calloc(mySize, sizeof(double)); 
+   myOct->y = (double *) calloc(mySize, sizeof(double)); 
+   myOct->z = (double *) calloc(mySize, sizeof(double)); 
    //allocate velocity for bodies in the octant
-   myOct->vx = (double *) calloc(myInitOctSize, sizeof(double)); 
-   myOct->vy = (double *) calloc(myInitOctSize, sizeof(double)); 
-   myOct->vz = (double *) calloc(myInitOctSize, sizeof(double)); 
+   myOct->vx = (double *) calloc(mySize, sizeof(double)); 
+   myOct->vy = (double *) calloc(mySize, sizeof(double)); 
+   myOct->vz = (double *) calloc(mySize, sizeof(double)); 
     
    //allocate masses for bodies in the octant
-   myOct->mass = (double *) calloc(myInitOctSize, sizeof(double)); 
+   myOct->mass = (double *) calloc(mySize, sizeof(double)); 
    
    //scat array with specified length 
-   MPI_Scatterv(xArr, initOctSize, displ, MPI_DOUBLE, myOct->x, myInitOctSize, MPI_DOUBLE, ROOT, MPI_COMM_WORLD);
-   MPI_Scatterv(yArr, initOctSize, displ, MPI_DOUBLE, myOct->y, myInitOctSize, MPI_DOUBLE, ROOT, MPI_COMM_WORLD);
-   MPI_Scatterv(zArr, initOctSize, displ, MPI_DOUBLE, myOct->z, myInitOctSize, MPI_DOUBLE, ROOT, MPI_COMM_WORLD);
+   MPI_Scatterv(xArr, sizeArr, displ, MPI_DOUBLE, myOct->x, mySize, MPI_DOUBLE, ROOT, MPI_COMM_WORLD);
+   MPI_Scatterv(yArr, sizeArr, displ, MPI_DOUBLE, myOct->y, mySize, MPI_DOUBLE, ROOT, MPI_COMM_WORLD);
+   MPI_Scatterv(zArr, sizeArr, displ, MPI_DOUBLE, myOct->z, mySize, MPI_DOUBLE, ROOT, MPI_COMM_WORLD);
 
-   MPI_Scatterv(vxArr, initOctSize, displ, MPI_DOUBLE, myOct->vx, myInitOctSize, MPI_DOUBLE, ROOT, MPI_COMM_WORLD);
-   MPI_Scatterv(vyArr, initOctSize, displ, MPI_DOUBLE, myOct->vy, myInitOctSize, MPI_DOUBLE, ROOT, MPI_COMM_WORLD);
-   MPI_Scatterv(vzArr, initOctSize, displ, MPI_DOUBLE, myOct->vz, myInitOctSize, MPI_DOUBLE, ROOT, MPI_COMM_WORLD);
+   MPI_Scatterv(vxArr, sizeArr, displ, MPI_DOUBLE, myOct->vx, mySize, MPI_DOUBLE, ROOT, MPI_COMM_WORLD);
+   MPI_Scatterv(vyArr, sizeArr, displ, MPI_DOUBLE, myOct->vy, mySize, MPI_DOUBLE, ROOT, MPI_COMM_WORLD);
+   MPI_Scatterv(vzArr, sizeArr, displ, MPI_DOUBLE, myOct->vz, mySize, MPI_DOUBLE, ROOT, MPI_COMM_WORLD);
    
-   MPI_Scatterv(massArr, initOctSize, displ, MPI_DOUBLE, myOct->mass, myInitOctSize, MPI_DOUBLE, ROOT, MPI_COMM_WORLD);
+   MPI_Scatterv(massArr, sizeArr, displ, MPI_DOUBLE, myOct->mass, mySize, MPI_DOUBLE, ROOT, MPI_COMM_WORLD);
    
-   //each octant has its own init size, myInitOctSize 
-   myOct->size = myOct->used = myInitOctSize;
+   //each octant has its own init size, mySize 
+   myOct->size = myOct->used = mySize;
 }
 
 //FIXME unused function
@@ -306,34 +322,34 @@ void recvBodies(Body* myOct){
    MPI_Status status[7];
    
    //allocate coordinates for bodies in the octant 
-   myOct->x = (double *) calloc(myInitOctSize, sizeof(double)); 
-   myOct->y = (double *) calloc(myInitOctSize, sizeof(double)); 
-   myOct->z = (double *) calloc(myInitOctSize, sizeof(double)); 
+   myOct->x = (double *) calloc(mySize, sizeof(double)); 
+   myOct->y = (double *) calloc(mySize, sizeof(double)); 
+   myOct->z = (double *) calloc(mySize, sizeof(double)); 
    
    //allocate velocity for bodies in the octant
-   myOct->vx = (double *) calloc(myInitOctSize, sizeof(double)); 
-   myOct->vy = (double *) calloc(myInitOctSize, sizeof(double)); 
-   myOct->vz = (double *) calloc(myInitOctSize, sizeof(double)); 
+   myOct->vx = (double *) calloc(mySize, sizeof(double)); 
+   myOct->vy = (double *) calloc(mySize, sizeof(double)); 
+   myOct->vz = (double *) calloc(mySize, sizeof(double)); 
     
    //allocate masses for bodies in the octant
-   myOct->mass = (double *) calloc(myInitOctSize, sizeof(double)); 
+   myOct->mass = (double *) calloc(mySize, sizeof(double)); 
 
    //wait to get coordinates
-   MPI_Irecv(myOct->x, myInitOctSize, MPI_DOUBLE, ROOT, rank+TAG_X, MPI_COMM_WORLD,&request[0]);
-   MPI_Irecv(myOct->y, myInitOctSize, MPI_DOUBLE, ROOT, rank+TAG_Y, MPI_COMM_WORLD,&request[1]);
-   MPI_Irecv(myOct->z, myInitOctSize, MPI_DOUBLE, ROOT, rank+TAG_Z, MPI_COMM_WORLD,&request[2]);
+   MPI_Irecv(myOct->x, mySize, MPI_DOUBLE, ROOT, rank+TAG_X, MPI_COMM_WORLD,&request[0]);
+   MPI_Irecv(myOct->y, mySize, MPI_DOUBLE, ROOT, rank+TAG_Y, MPI_COMM_WORLD,&request[1]);
+   MPI_Irecv(myOct->z, mySize, MPI_DOUBLE, ROOT, rank+TAG_Z, MPI_COMM_WORLD,&request[2]);
    
    //wait to get velocity
-   MPI_Irecv(myOct->vx, myInitOctSize, MPI_DOUBLE, ROOT, rank+TAG_VX, MPI_COMM_WORLD,&request[3]);
-   MPI_Irecv(myOct->vy, myInitOctSize, MPI_DOUBLE, ROOT, rank+TAG_VY, MPI_COMM_WORLD,&request[4]);
-   MPI_Irecv(myOct->vz, myInitOctSize, MPI_DOUBLE, ROOT, rank+TAG_VZ, MPI_COMM_WORLD,&request[5]);
+   MPI_Irecv(myOct->vx, mySize, MPI_DOUBLE, ROOT, rank+TAG_VX, MPI_COMM_WORLD,&request[3]);
+   MPI_Irecv(myOct->vy, mySize, MPI_DOUBLE, ROOT, rank+TAG_VY, MPI_COMM_WORLD,&request[4]);
+   MPI_Irecv(myOct->vz, mySize, MPI_DOUBLE, ROOT, rank+TAG_VZ, MPI_COMM_WORLD,&request[5]);
 
    //wait to get mass
-   MPI_Irecv(myOct->mass, myInitOctSize, MPI_DOUBLE, ROOT, rank+TAG_MASS, MPI_COMM_WORLD,&request[6]);
+   MPI_Irecv(myOct->mass, mySize, MPI_DOUBLE, ROOT, rank+TAG_MASS, MPI_COMM_WORLD,&request[6]);
    
    //wait all to finish
    MPI_Waitall(7,request,status);
-   myOct->used = myOct->size = myInitOctSize;
+   myOct->used = myOct->size = mySize;
 }
 
 void pointToAxis(double x, double y, double z, double** duAxis){
@@ -408,6 +424,91 @@ void checkKeen(int a, int b, int c,double** duAxis, Body** wildCardsTo, Body* my
        //add a wild card to octant c
        insertWildCard( &(*wildCardsTo)[c], myOct, i); 
     }
+}
+
+void prepScatWildcards(Body** wildCardsTo){
+   int i;
+   int bodyNum=0;
+   int offset=0;
+   int size;
+
+    //get total number of bodies in the problem
+   for (i=0; i<procNum; i++){
+       if(i!=rank){
+           bodyNum = bodyNum + (*wildCardsTo)[i].size;
+        }
+    }
+
+   //allocate memory to buffers 
+   xArr =(double*) calloc(bodyNum, sizeof(double));      
+   yArr =(double*) calloc(bodyNum, sizeof(double));      
+   zArr =(double*) calloc(bodyNum, sizeof(double));      
+
+   massArr =(double*) calloc(bodyNum, sizeof(double));      
+   
+   displ =(int*) calloc(procNum, sizeof(int));
+   sizeArr =(int*) calloc(procNum, sizeof(int));
+   
+   //append things into their array buffer
+   //the Arr buffers collects all the elements that are wildcards to octants
+   for(i=0; i<procNum;i++){
+       if(i!=rank){
+           size = (*wildCardsTo)[i].size;
+           sizeArr[i] = size;
+           displ[i] = offset;
+           memcpy(xArr+offset, (*wildCardsTo)[i].x, size*sizeof(double));
+           memcpy(yArr+offset, (*wildCardsTo)[i].y, size*sizeof(double));
+           memcpy(zArr+offset, (*wildCardsTo)[i].z, size*sizeof(double));
+
+           memcpy(massArr+offset, (*wildCardsTo)[i].mass, size*sizeof(double));
+
+           offset+=size;
+       }
+   }
+
+   //transpose initOctSize and displ
+   transSizeArr =(int*) calloc(procNum, sizeof(int));
+   transDispl =(int*) calloc(procNum, sizeof(int));
+   barrier();
+   MPI_Alltoall(sizeArr, 1, MPI_INT, transSizeArr, 1, MPI_INT, MPI_COMM_WORLD);
+   
+   offset=0;
+   for(i=0;i<procNum;i++){
+        transDispl[i] = offset;
+        offset+=transSizeArr[i];
+   }
+}
+
+void exchangeCards(Body* myWildCards){
+    int i;
+
+   //allocate coordinates for bodies in the octant 
+   mySize = 0;
+   for(i=0;i<procNum;i++){
+       mySize += transSizeArr[i];
+   }
+   
+   myWildCards->x = (double *) calloc(mySize, sizeof(double)); 
+   myWildCards->y = (double *) calloc(mySize, sizeof(double)); 
+   myWildCards->z = (double *) calloc(mySize, sizeof(double)); 
+    
+   //allocate masses for bodies in the octant
+   myWildCards->mass = (double *) calloc(mySize, sizeof(double)); 
+   
+   //scat array with specified length 
+   //each octant scat its wildcards' buffers
+   barrier();
+   //scat coordinates first
+   MPI_Alltoallv(xArr, sizeArr, displ, MPI_DOUBLE, myWildCards->x, transSizeArr, transDispl, MPI_DOUBLE, MPI_COMM_WORLD);
+   MPI_Alltoallv(yArr, sizeArr, displ, MPI_DOUBLE, myWildCards->y, transSizeArr, transDispl, MPI_DOUBLE, MPI_COMM_WORLD);
+   MPI_Alltoallv(zArr, sizeArr, displ, MPI_DOUBLE, myWildCards->z, transSizeArr, transDispl, MPI_DOUBLE, MPI_COMM_WORLD);
+   
+   //now scat mass
+   MPI_Alltoallv(massArr, sizeArr, displ, MPI_DOUBLE, myWildCards->mass, transSizeArr, transDispl, MPI_DOUBLE, MPI_COMM_WORLD);
+   
+   //each octant has its own wildcard size, mySize 
+   myWildCards->size = myWildCards->used = mySize;
+   //printf("%d: %d\n",rank, myWildCards->size);
 }
 
 void estimateDU(Body* myOct, Body** wildCardsTo){
@@ -500,12 +601,3 @@ void estimateDU(Body* myOct, Body** wildCardsTo){
     }
 }
 
-void exchangeCards(Body** wildCardsTo, Body** wildCardsFrom){
-    int i;
-    
-    for(i=0;i<procNum;i++){
-        if(i!=rank){
-            
-        }
-    }
-}

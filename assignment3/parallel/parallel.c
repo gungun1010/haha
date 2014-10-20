@@ -6,8 +6,8 @@ main(int argc, char **argv){
    int ts, thisbody, otherbody;
    double vavgx, vavgy, vavgz, ax, ay, az, deltaf[3];
    double etime, etime0, etime1, cptime;
-   Body *oct, *wildCardsTo, *wildCardsFrom;
-   Body myOct;
+   Body *oct, *wildCardsTo;
+   Body myOct, myWildCards;
     
    init(&argc, &argv, &procNum, &rank);
    
@@ -22,7 +22,7 @@ main(int argc, char **argv){
         
         //wait for everyone to be ready before starting timer
         //then boardcast N, K, Dt
-        MPI_Barrier(MPI_COMM_WORLD); 
+        barrier(); 
         boardcastConsts();
         
         //prepare buffers to scat octants' bodies
@@ -30,14 +30,14 @@ main(int argc, char **argv){
 
         //distribute Octants to their owners
         //myOct is defined in this function
-        MPI_Barrier(MPI_COMM_WORLD); 
+        barrier(); 
         scatOctants(&myOct);
         
         //free Octants Buffer after scatting the boddies, 
         //free initial data
         freeOctants(&oct);
         freeInitData();
-
+        freeBuffer();
         //debug prints
         printOct(&myOct,rank);
 
@@ -45,15 +45,17 @@ main(int argc, char **argv){
         //This defines what wildCardsTo is (which wildcard to send to dest).
         estimateDU(&myOct, &wildCardsTo);
 
-        exchangeCards(&wildCardsTo, &wildCardsFrom);
+        //scat my wildcards to all 
+        prepScatWildcards(&wildCardsTo);
+        exchangeCards(&myWildCards);
    }else{
         //wait for everyone to be ready before starting timer
         //waiting for master's boardcast
-        MPI_Barrier(MPI_COMM_WORLD); 
+        barrier(); 
         boardcastConsts();
         
         //distribute Octants to their owners
-        MPI_Barrier(MPI_COMM_WORLD); 
+        barrier(); 
         scatOctants(&myOct);
 
         //debug prints
@@ -61,8 +63,10 @@ main(int argc, char **argv){
         
         //estimate DU of each of my bodies
         estimateDU(&myOct, &wildCardsTo);
-        
-        exchangeCards(&wildCardsTo, &wildCardsFrom);
+
+        //scat my wildcards to all 
+        prepScatWildcards(&wildCardsTo);
+        exchangeCards(&myWildCards);
    }
    MPI_Finalize();           
 }

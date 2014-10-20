@@ -4,6 +4,7 @@
 #include <math.h>
 #include "global.h"
 #include "/home/fas/hpcprog/ahs3/cpsc424/utils/timing/timing.h"
+void barrier();
 
 void printOct(Body *a,int i);
 
@@ -41,9 +42,13 @@ void checkNeighbor(int a, int b, int c, double** duPlane, Body** wildCardsTo, Bo
 
 void checkOppose(int a, double duOrigin, Body** wildCardsout, Body* myOct, int i);
 
+void freeBuffer();
+
 void checkKeen(int a, int b, int c,double** duAxis, Body** wildCardsTo, Body* myOct, int i);
 
 void estimateDU(Body* myOct, Body** wildCardsTo);
 
-void exchangeCards(Body** wildCardsTo, Body** wildCardsFrom);
+void prepScatWildcards(Body** wildCardsTo);
+
+void exchangeCards(Body* myWildCards);
  
