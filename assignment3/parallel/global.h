@@ -16,7 +16,7 @@
 #define TAG_MASS 0xE000
 
 #define ROOT 0
-
+#define DU_THRES 5.
 //data type for each body, contains its location, velocity, and mass
 typedef struct {
     double *x;
@@ -49,6 +49,8 @@ double *fy;     // Y velocity array for N bodies
 double *fz;     // Z velocity array for N bodies
 int procNum;    // process number in the communicator
 int rank;       // rank of proc in the communicator
-int *initOctSize; //array of initial size of each octant
+int *initOctSize, *displ; //array of initial size of each octant, and displacement for the array
 int myInitOctSize; //size of each octant, used in each process   
 
+//buffers for collective comm.
+double *xArr, *yArr, *zArr, *vxArr, *vyArr, *vzArr, *massArr;

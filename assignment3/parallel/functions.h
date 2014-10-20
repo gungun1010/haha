@@ -29,8 +29,21 @@ void boardcastConsts();
 
 void sliceOctants(Body** oct);
 
-void scatOctants(Body** oct);
+void prepScat(Body** oct);
+
+void scatOctants(Body* myOct);
 
 void recvBodies(Body* myOct);
 
-void estimateDU(Body* myOct);
+void pointToAxis(double x, double y, double z, double** duAxis);
+
+void checkNeighbor(int a, int b, int c, double** duPlane, Body** wildCardsTo, Body* myOct, int i);
+
+void checkOppose(int a, double duOrigin, Body** wildCardsout, Body* myOct, int i);
+
+void checkKeen(int a, int b, int c,double** duAxis, Body** wildCardsTo, Body* myOct, int i);
+
+void estimateDU(Body* myOct, Body** wildCardsTo);
+
+void exchangeCards(Body** wildCardsTo, Body** wildCardsFrom);
+ 

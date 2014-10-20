@@ -9,4 +9,4 @@ parallel: parallel.o functions.o ~ahs3/cpsc424/utils/timing/timing.o
 	$(CC) $(CFLAGS) -c $<
 
 clean:
-	rm -f parallel *.o
+	rm -f parallel *.o *.btr
