@@ -5,16 +5,6 @@
 
 #define NUM_PROCESSORS 8
 
-#define TAG_X 0x8000
-#define TAG_Y 0x9000
-#define TAG_Z 0xA000
-
-#define TAG_VX 0xB000
-#define TAG_VY 0xC000
-#define TAG_VZ 0xD000
-
-#define TAG_MASS 0xE000
-
 #define ROOT 0
 #define DU_THRES 5.
 //data type for each body, contains its location, velocity, and mass
@@ -26,23 +16,16 @@ typedef struct {
     double *vy;
     double *vz;
     double *mass;
+    
+    //these are the force calc results, they never scats
+    double *fx;     // X force array for N bodies
+    double *fy;     // Y velocity array for N bodies
+    double *fz;     // Z velocity array for N bodies
 
     //these two are for initial distribution
     size_t used;
     size_t size;
 } Body;
-
-//data type for each body, contains its location, velocity, and mass
-typedef struct {
-    double *x;
-    double *y;
-    double *z;
-    double *mass;
-
-    //these two are for initial distribution
-    size_t used;
-    size_t size;
-} WildBody;
 
 // Globals so that we don't need to pass them to functions
 double dt;      //delta t for [t_k, t_k+1]

@@ -1,0 +1,10 @@
+
+parallel:24320 terminated with signal 11 at PC=2b2efde1a0f4 SP=7fff60fccd60.  Backtrace:
+/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(opal_memory_ptmalloc2_int_free+0x74)[0x2b2efde1a0f4]
+/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(opal_memory_ptmalloc2_free+0xb0)[0x2b2efde1beb0]
+/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(+0x79a01)[0x2b2efdc41a01]
+/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(mca_pml_base_close+0x7f)[0x2b2efdd2b44f]
+/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(ompi_mpi_finalize+0x3ce)[0x2b2efdc5aece]
+parallel(main+0xb6)[0x401866]
+/lib64/libc.so.6(__libc_start_main+0xfd)[0x30dfe1ecdd]
+parallel[0x4016e9]

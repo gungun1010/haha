@@ -118,31 +118,100 @@ void output(int ts) {
 
 // Function to compute the forces between a pair of bodies
 /*
+ * modified from:
   Author: Andrew Sherman, Yale University
 
   Date: 2/23/2013
 
 */
-void force(int body1, int body2, double *deltaf) {
+void force(int body1, int body2, Body* myOct, Body* myWildcards, double **deltaf) {
   double gmmr3, r, r2, dx, dy, dz;
   double G=1.0;
   
-  dx = x[body2] - x[body1];
-  dy = y[body2] - y[body1];
-  dz = z[body2] - z[body1];
+  dx = myWildcards->x[body2] - myOct->x[body1];
+  dy = myWildcards->y[body2] - myOct->y[body1];
+  dz = myWildcards->z[body2] - myOct->z[body1];
+  
   r2 = dx*dx + dy*dy + dz*dz;
+  
   r = sqrt(r2);
-  if (r<=5.) {
-    gmmr3 = G*mass[body1]*mass[body2]/(r2*r);
-    deltaf[0] = gmmr3 * dx;
-    deltaf[1] = gmmr3 * dy;
-    deltaf[2] = gmmr3 * dz;
+  if (r <= DU_THRES) {
+    gmmr3 = G * myOct->mass[body1] * myWildcards->mass[body2]/(r2*r);
+    (*deltaf)[0] = gmmr3 * dx;
+    (*deltaf)[1] = gmmr3 * dy;
+    (*deltaf)[2] = gmmr3 * dz;
   }
   else{
-    deltaf[0] = 0.;
-    deltaf[1] = 0.;
-    deltaf[2] = 0.;
+    (*deltaf)[0] = 0.;
+    (*deltaf)[1] = 0.;
+    (*deltaf)[2] = 0.;
   }
+}
+
+// computation function
+/*
+ * modified from:
+  Author: Andrew Sherman, Yale University
+
+  Date: 2/23/2013
+
+*/
+void calcForce(Body* myOct, Body* myWildcards){
+    int thisbody, otherbody;
+    double vavgx, vavgy, vavgz, ax, ay, az, *deltaf;
+    int size;
+
+    size = myOct->size;
+    deltaf = (double*) calloc(3, sizeof(double));
+
+    //allocate memory for force here as we only need it at this point not before
+    myOct->fx = (double*) calloc(size, sizeof(double));
+    myOct->fy = (double*) calloc(size, sizeof(double));
+    myOct->fz = (double*) calloc(size, sizeof(double));
+
+    // Compute all pairwise interbody forces (Note that we take advantage of symmetry.)
+    for(thisbody=0; thisbody<size; thisbody++){
+        for(otherbody=thisbody+1; otherbody<size; otherbody++){
+            //since both thisBody and otherBody are within same Octant, so myOct bodies are passed as a pair
+            force(thisbody, otherbody, myOct, myOct, &deltaf);
+
+            myOct->fx[thisbody] += deltaf[0]; // Add x component of force to thisbody
+            myOct->fy[thisbody] += deltaf[1]; // Add y component of force to thisbody
+            myOct->fz[thisbody] += deltaf[2]; // Add z component of force to thisbody
+            myOct->fx[otherbody] -= deltaf[0]; // Subtract x component of force from otherbody
+            myOct->fy[otherbody] -= deltaf[1]; // Subtract y component of force from otherbody
+            myOct->fz[otherbody] -= deltaf[2]; // Subtract z component of force from otherbody
+        }
+       
+        //calc force from bodies outside of my octant 
+        for(otherbody=0; otherbody< myWildcards->size; otherbody++){
+            force(thisbody, otherbody, myOct, myWildcards, &deltaf);
+
+            myOct->fx[thisbody] += deltaf[0]; // Add x component of force to thisbody
+            myOct->fy[thisbody] += deltaf[1]; // Add y component of force to thisbody
+            myOct->fz[thisbody] += deltaf[2]; // Add z component of force to thisbody
+        }
+    }
+
+    dtBy2 = dt/2.; 
+
+    // Now move the bodies (assumes constant acceleration during the timestep)
+    for (thisbody=0; thisbody<size; thisbody++) {
+        ax = myOct->fx[thisbody] / myOct->mass[thisbody]; // Compute x-direction acceleration of thisbody
+        ay = myOct->fy[thisbody] / myOct->mass[thisbody]; // Compute y-direction acceleration of thisbody
+        az = myOct->fz[thisbody] / myOct->mass[thisbody]; // Compute z-direction acceleration of thisbody
+
+        vavgx = myOct->vx[thisbody] + dtBy2*ax; // Compute average x velocity of thisbody
+        vavgy = myOct->vy[thisbody] + dtBy2*ay; // Compute average y velocity of thisbody
+        vavgz = myOct->vz[thisbody] + dtBy2*az; // Compute average z velocity of thisbody
+        myOct->x[thisbody] = myOct->x[thisbody] + dt*vavgx; // Compute new x position of thisbody
+        myOct->y[thisbody] = myOct->y[thisbody] + dt*vavgy; // Compute new y position of thisbody
+        myOct->z[thisbody] = myOct->z[thisbody] + dt*vavgz; // Compute new z position of thisbody
+        myOct->vx[thisbody] += dt*ax; // Compute x velocity of thisbody at end of timestep
+        myOct->vy[thisbody] += dt*ay; // Compute y velocity of thisbody at end of timestep
+        myOct->vz[thisbody] += dt*az; // Compute z velocity of thisbody at end of timestep
+          
+    }
 }
 
 //MPI initialization function
@@ -315,43 +384,6 @@ void scatOctants(Body* myOct){
    myOct->size = myOct->used = mySize;
 }
 
-//FIXME unused function
-void recvBodies(Body* myOct){
-   //we can hardcode 7 here since the parameters are fixed to [x,y,z], [vx,vy,vz], mass
-   MPI_Request request[7];
-   MPI_Status status[7];
-   
-   //allocate coordinates for bodies in the octant 
-   myOct->x = (double *) calloc(mySize, sizeof(double)); 
-   myOct->y = (double *) calloc(mySize, sizeof(double)); 
-   myOct->z = (double *) calloc(mySize, sizeof(double)); 
-   
-   //allocate velocity for bodies in the octant
-   myOct->vx = (double *) calloc(mySize, sizeof(double)); 
-   myOct->vy = (double *) calloc(mySize, sizeof(double)); 
-   myOct->vz = (double *) calloc(mySize, sizeof(double)); 
-    
-   //allocate masses for bodies in the octant
-   myOct->mass = (double *) calloc(mySize, sizeof(double)); 
-
-   //wait to get coordinates
-   MPI_Irecv(myOct->x, mySize, MPI_DOUBLE, ROOT, rank+TAG_X, MPI_COMM_WORLD,&request[0]);
-   MPI_Irecv(myOct->y, mySize, MPI_DOUBLE, ROOT, rank+TAG_Y, MPI_COMM_WORLD,&request[1]);
-   MPI_Irecv(myOct->z, mySize, MPI_DOUBLE, ROOT, rank+TAG_Z, MPI_COMM_WORLD,&request[2]);
-   
-   //wait to get velocity
-   MPI_Irecv(myOct->vx, mySize, MPI_DOUBLE, ROOT, rank+TAG_VX, MPI_COMM_WORLD,&request[3]);
-   MPI_Irecv(myOct->vy, mySize, MPI_DOUBLE, ROOT, rank+TAG_VY, MPI_COMM_WORLD,&request[4]);
-   MPI_Irecv(myOct->vz, mySize, MPI_DOUBLE, ROOT, rank+TAG_VZ, MPI_COMM_WORLD,&request[5]);
-
-   //wait to get mass
-   MPI_Irecv(myOct->mass, mySize, MPI_DOUBLE, ROOT, rank+TAG_MASS, MPI_COMM_WORLD,&request[6]);
-   
-   //wait all to finish
-   MPI_Waitall(7,request,status);
-   myOct->used = myOct->size = mySize;
-}
-
 void pointToAxis(double x, double y, double z, double** duAxis){
     double dx,dy,dz;
 
@@ -508,7 +540,7 @@ void exchangeCards(Body* myWildCards){
    
    //each octant has its own wildcard size, mySize 
    myWildCards->size = myWildCards->used = mySize;
-   //printf("%d: %d\n",rank, myWildCards->size);
+   printf("%d: %d\n",rank, myWildCards->size);
 }
 
 void estimateDU(Body* myOct, Body** wildCardsTo){

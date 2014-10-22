@@ -3,8 +3,7 @@
 
 main(int argc, char **argv){
    int i, wctime;
-   int ts, thisbody, otherbody;
-   double vavgx, vavgy, vavgz, ax, ay, az, deltaf[3];
+   int ts;
    double etime, etime0, etime1, cptime;
    Body *oct, *wildCardsTo;
    Body myOct, myWildCards;
@@ -48,6 +47,10 @@ main(int argc, char **argv){
         //scat my wildcards to all 
         prepScatWildcards(&wildCardsTo);
         exchangeCards(&myWildCards);
+        
+        //must free all buffers used in collective operations
+
+        calcForce(&myOct, &myWildCards);
    }else{
         //wait for everyone to be ready before starting timer
         //waiting for master's boardcast
@@ -67,6 +70,10 @@ main(int argc, char **argv){
         //scat my wildcards to all 
         prepScatWildcards(&wildCardsTo);
         exchangeCards(&myWildCards);
+        
+        //must free all buffers used in collective operations
+        
+        calcForce(&myOct, &myWildCards);
    }
    MPI_Finalize();           
 }

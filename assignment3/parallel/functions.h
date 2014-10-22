@@ -18,7 +18,7 @@ void freeOctants(Body **octRef);
 
 void output(int ts);
 
-void force(int body1, int body2, double *deltaf);
+void force(int body1, int body2, Body* myOct, Body* myWildCards, double **deltaf);
 
 void init(int* argcRef, char ***argvRef, int* procNumRef, int* rankRef);
 
@@ -33,8 +33,6 @@ void sliceOctants(Body** oct);
 void prepScat(Body** oct);
 
 void scatOctants(Body* myOct);
-
-void recvBodies(Body* myOct);
 
 void pointToAxis(double x, double y, double z, double** duAxis);
 
@@ -51,4 +49,5 @@ void estimateDU(Body* myOct, Body** wildCardsTo);
 void prepScatWildcards(Body** wildCardsTo);
 
 void exchangeCards(Body* myWildCards);
- 
+
+void calcForce(Body* myOct, Body* myWildCards); 
