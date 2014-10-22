@@ -38,7 +38,7 @@ main(int argc, char **argv){
         freeInitData();
         freeBuffer();
         //debug prints
-        printOct(&myOct,rank);
+        //printOct(&myOct,rank);
 
         //estimate DU of each of my bodies
         //This defines what wildCardsTo is (which wildcard to send to dest).
@@ -49,7 +49,7 @@ main(int argc, char **argv){
         exchangeCards(&myWildCards);
         
         //must free all buffers used in collective operations
-
+        barrier();
         calcForce(&myOct, &myWildCards);
    }else{
         //wait for everyone to be ready before starting timer
@@ -72,7 +72,7 @@ main(int argc, char **argv){
         exchangeCards(&myWildCards);
         
         //must free all buffers used in collective operations
-        
+        barrier();
         calcForce(&myOct, &myWildCards);
    }
    MPI_Finalize();           

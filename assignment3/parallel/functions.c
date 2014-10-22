@@ -185,6 +185,7 @@ void calcForce(Body* myOct, Body* myWildcards){
        
         //calc force from bodies outside of my octant 
         for(otherbody=0; otherbody< myWildcards->size; otherbody++){
+            
             force(thisbody, otherbody, myOct, myWildcards, &deltaf);
 
             myOct->fx[thisbody] += deltaf[0]; // Add x component of force to thisbody
@@ -300,7 +301,7 @@ void sliceOctants(Body** oct){
             insertBody(&(*oct)[4],i);
         if(x[i]>=0. && y[i]<0. && z[i]<0.)//5
             insertBody(&(*oct)[5],i);
-        if(x[i]<0. && y[i]<0. && z[i]>=0.)//6
+        if(x[i]<0. && y[i]<0. && z[i]<0.)//6
             insertBody(&(*oct)[6],i);
         if(x[i]<0. && y[i]>=0. && z[i]<0.)//7
             insertBody(&(*oct)[7],i);
@@ -540,7 +541,7 @@ void exchangeCards(Body* myWildCards){
    
    //each octant has its own wildcard size, mySize 
    myWildCards->size = myWildCards->used = mySize;
-   printf("%d: %d\n",rank, myWildCards->size);
+   //printf("%d: %d\n",rank, myWildCards->size);
 }
 
 void estimateDU(Body* myOct, Body** wildCardsTo){
