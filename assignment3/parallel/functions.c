@@ -215,6 +215,9 @@ void calcForce(Body* myOct, Body* myWildcards){
     }
 }
 
+void checkOctants(){
+}
+
 //MPI initialization function
 void init(int* argcRef, char ***argvRef, int* procNumRef, int* rankRef){
     

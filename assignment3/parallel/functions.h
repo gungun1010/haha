@@ -51,3 +51,5 @@ void prepScatWildcards(Body** wildCardsTo);
 void exchangeCards(Body* myWildCards);
 
 void calcForce(Body* myOct, Body* myWildCards); 
+
+void checkOctants();
