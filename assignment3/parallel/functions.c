@@ -7,7 +7,7 @@ void barrier(){
 
 void printOct(Body *a, int i){
     int j;
-    printf("octant %d *********************************************************\n",i);
+    printf("*************************** octant %d ******************************\n",i);
     
     for(j=0;j<a->used;j++){
         printf("coordinate: [%.3le, %.3le, %.3le] ",a->x[j],a->y[j],a->z[j]);
@@ -50,6 +50,44 @@ void insertBody(Body *a, int i){
       a->vz[a->used] = vz[i];
       a->mass[a->used] = mass[i];
       a->used++;
+}
+
+void removeBody(Body *a, int index){
+   int i;
+   int newSize;
+
+   newSize = a->size -1;
+   for(i=index; i< newSize; i++){
+       a->x[i] = a->x[i+1];
+       a->y[i] = a->y[i+1];
+       a->z[i] = a->z[i+1];
+
+       a->vx[i] = a->vx[i+1];
+       a->vy[i] = a->vy[i+1];
+       a->vz[i] = a->vz[i+1];
+
+       a->fx[i] = a->fx[i+1];
+       a->fy[i] = a->fy[i+1];
+       a->fz[i] = a->fz[i+1];
+
+       a->mass[i] = a->mass[i+1];
+    }
+    
+    a->x = (double *)realloc(a->x, newSize * sizeof(double));
+    a->y = (double *)realloc(a->y, newSize * sizeof(double));
+    a->z = (double *)realloc(a->z, newSize * sizeof(double));
+    
+    a->vx = (double *)realloc(a->vx, newSize * sizeof(double));
+    a->vy = (double *)realloc(a->vy, newSize * sizeof(double));
+    a->vz = (double *)realloc(a->vz, newSize * sizeof(double));
+    
+    a->fx = (double *)realloc(a->fx, newSize * sizeof(double));
+    a->fy = (double *)realloc(a->fy, newSize * sizeof(double));
+    a->fz = (double *)realloc(a->fz, newSize * sizeof(double));
+    
+    a->mass = (double *)realloc(a->mass, newSize * sizeof(double));
+
+    a->size = a->used = newSize;
 }
 
 void freeBody(Body *a) {
@@ -213,9 +251,161 @@ void calcForce(Body* myOct, Body* myWildcards){
         myOct->vz[thisbody] += dt*az; // Compute z velocity of thisbody at end of timestep
           
     }
+
 }
 
-void checkOctants(){
+int findOwner(Body* myOct, int i){
+    int owner;
+    
+    if(myOct->x[i]>=0. && myOct->y[i]>=0. && myOct->z[i]>=0.)//0
+        owner = 0;
+    if(myOct->x[i]>=0. && myOct->y[i]<0. && myOct->z[i]>=0.)//1
+        owner = 1;
+    if(myOct->x[i]<0. && myOct->y[i]<0. && myOct->z[i]>=0.)//2
+        owner = 2;
+    if(myOct->x[i]<0. && myOct->y[i]>=0. && myOct->z[i]>=0.)//3
+        owner = 3;
+    if(myOct->x[i]>=0. && myOct->y[i]>=0. && myOct->z[i]<0.)//4
+        owner = 4;
+    if(myOct->x[i]>=0. && myOct->y[i]<0. && myOct->z[i]<0.)//5
+        owner = 5;
+    if(myOct->x[i]<0. && myOct->y[i]<0. && myOct->z[i]<0.)//6
+        owner = 6;
+    if(myOct->x[i]<0. && myOct->y[i]>=0. && myOct->z[i]<0.)//7
+        owner = 7;
+
+    return owner;
+}
+
+void addToOwner(Body* a, Body* myOct, int i){
+      
+      if (a->used == a->size) {
+          a->size++;
+          
+          a->x = (double *)realloc(a->x, a->size * sizeof(double));
+          a->y = (double *)realloc(a->y, a->size * sizeof(double));
+          a->z = (double *)realloc(a->z, a->size * sizeof(double));
+
+          a->vx = (double *)realloc(a->x, a->size * sizeof(double));
+          a->vy = (double *)realloc(a->y, a->size * sizeof(double));
+          a->vz = (double *)realloc(a->z, a->size * sizeof(double));
+
+          a->fx = (double *)realloc(a->x, a->size * sizeof(double));
+          a->fy = (double *)realloc(a->y, a->size * sizeof(double));
+          a->fz = (double *)realloc(a->z, a->size * sizeof(double));
+
+          a->mass = (double *)realloc(a->mass, a->size * sizeof(double));
+      }
+      
+      a->x[a->used] = myOct->x[i];
+      a->y[a->used] = myOct->y[i];
+      a->z[a->used] = myOct->z[i];
+      
+      a->vx[a->used] = myOct->x[i];
+      a->vy[a->used] = myOct->y[i];
+      a->vz[a->used] = myOct->z[i];
+      
+      a->fx[a->used] = myOct->x[i];
+      a->fy[a->used] = myOct->y[i];
+      a->fz[a->used] = myOct->z[i];
+      
+      a->mass[a->used] = myOct->mass[i];
+      a->used++;
+}
+
+void updateOwner(Body** oct, Body* myOct){
+    int i;
+    int owner;
+     
+    *oct = (Body *) calloc(procNum, sizeof(Body));
+
+    for(i=0;i<procNum;i++){
+        initBody(&(*oct)[i], 1);  // initially 1 elements     
+        (*oct)[i].fx = (double *)malloc(1 * sizeof(double));
+        (*oct)[i].fy = (double *)malloc(1 * sizeof(double));
+        (*oct)[i].fz = (double *)malloc(1 * sizeof(double));
+    }
+
+    for(i=0; i< myOct->size; i++){
+        switch (rank){
+            case 0:
+                if(myOct->x[i]<0. || myOct->y[i]<0. || myOct->z[i]<0.){//!0
+                    printf("run away from %d\n",rank);
+                    owner = findOwner(myOct, i);
+                    addToOwner(&(*oct)[owner], myOct, i);
+                    removeBody(myOct,i);
+                }
+                break;
+            case 1:
+                if(myOct->x[i]<0. || myOct->y[i]>=0. || myOct->z[i]<0.){//!1
+                    printf("run away from %d\n",rank);
+                    owner = findOwner(myOct, i);
+                    addToOwner(&(*oct)[owner], myOct, i);
+                    removeBody(myOct,i);
+                }
+                break;
+            case 2:
+                if(myOct->x[i]>=0. || myOct->y[i]>=0. || myOct->z[i]<0.){//!2
+                    printf("run away from %d\n",rank);
+                    owner = findOwner(myOct, i);
+                    addToOwner(&(*oct)[owner], myOct, i);
+                    removeBody(myOct,i);
+                }
+                break;
+            case 3:
+                if(myOct->x[i]>=0. || myOct->y[i]<0. || myOct->z[i]<0.){//!3
+                    printf("run away from %d\n",rank);
+                    owner = findOwner(myOct, i);
+                    addToOwner(&(*oct)[owner], myOct, i);
+                    removeBody(myOct,i);
+                }
+                break;
+            case 4:
+                if(myOct->x[i]<0. || myOct->y[i]<0. || myOct->z[i]>=0.){//!4
+                    printf("run away from %d\n",rank);
+                    owner = findOwner(myOct, i);
+                    addToOwner(&(*oct)[owner], myOct, i);
+                    removeBody(myOct,i);
+                }
+                break;
+            case 5:
+                if(myOct->x[i]<0. || myOct->y[i]>=0. || myOct->z[i]>=0.){//!5
+                    printf("run away from %d\n",rank);
+                    owner = findOwner(myOct, i);
+                    addToOwner(&(*oct)[owner], myOct, i);
+                    removeBody(myOct,i);
+                }
+                break;
+            case 6:
+                if(myOct->x[i]>=0. || myOct->y[i]>=0. || myOct->z[i]>=0.){//!6
+                    printf("run away from %d\n",rank);
+                    owner = findOwner(myOct, i);
+                    addToOwner(&(*oct)[owner], myOct, i);
+                    removeBody(myOct,i);
+                }
+                break;
+            case 7:
+                if(myOct->x[i]>=0. || myOct->y[i]<0. || myOct->z[i]>=0.){//!1
+                    printf("run away from %d\n",rank);
+                    owner = findOwner(myOct, i);
+                    addToOwner(&(*oct)[owner], myOct, i);
+                    removeBody(myOct,i);
+                }
+                break;
+            default:
+                break;
+        }
+
+    }
+
+    sizeArr = calloc(procNum, sizeof(int));
+    
+    //push each octant size into an array then boardcast the array 
+    //i do boardcast instead of scatter since the array is needed for MPI_Scatterv() 
+    for(i=0;i<procNum;i++){
+        sizeArr[i]=(*oct)[i].size;
+    }
+    
 }
 
 //MPI initialization function

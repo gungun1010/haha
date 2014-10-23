@@ -60,12 +60,13 @@ main(int argc, char **argv){
         exchangeCards(&myWildCards);
         
         //must free all buffers used in collective operations
-        barrier();
+        barrier(&oct, &myOct);
         //comp. func.
         calcForce(&myOct, &myWildCards);
         
+        printOct(&myOct,rank);
         //comp. func.
-        checkOctants();
+        updateOwner(&oct, &myOct);//recycle the oct buffer here
    }else{
         //wait for everyone to be ready before starting timer
         //waiting for master's boardcast
@@ -90,7 +91,8 @@ main(int argc, char **argv){
         barrier();
         calcForce(&myOct, &myWildCards);
 
-        checkOctants();
+        printOct(&myOct,rank);
+        updateOwner(&oct, &myOct);
    }
    MPI_Finalize();           
 }

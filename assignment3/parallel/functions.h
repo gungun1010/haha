@@ -12,6 +12,8 @@ void initBody(Body *a, size_t initialSize);
 
 void insertBody(Body *a, int i);
 
+void removeBody(Body *a, int index);
+
 void freeBody(Body *a);
 
 void freeOctants(Body **octRef);
@@ -52,4 +54,8 @@ void exchangeCards(Body* myWildCards);
 
 void calcForce(Body* myOct, Body* myWildCards); 
 
-void checkOctants();
+int findOwner(Body* myOct, int i);
+
+void addToOwner(Body* Owner, Body* myOct, int i);
+
+void updateOwner(Body** oct, Body* myOct);
