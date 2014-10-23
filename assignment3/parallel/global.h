@@ -7,6 +7,10 @@
 
 #define ROOT 0
 #define DU_THRES 5.
+#define INIT_STAGE 0xA
+#define WILDCARD_STAGE 0xB
+#define NEWCOMER_STAGE 0xC
+
 //data type for each body, contains its location, velocity, and mass
 typedef struct {
     double *x;
@@ -49,4 +53,4 @@ int *transSizeArr, *transDispl; // buffer to store transposed size and displacem
 int mySize; //size of each octant, used in each process   
 
 //buffers for collective comm.
-double *xArr, *yArr, *zArr, *vxArr, *vyArr, *vzArr, *massArr;
+double *xArr, *yArr, *zArr, *vxArr, *vyArr, *vzArr, *fxArr, *fyArr, *fzArr, *massArr;

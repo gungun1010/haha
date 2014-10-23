@@ -109,16 +109,37 @@ void freeOctants(Body** octRef){
     }
 }
 
-void freeBuffer(){
+void freeBuffer(int stage){
     free(massArr);
     free(xArr);
     free(yArr);
     free(zArr);
-    free(vxArr);
-    free(vyArr);
-    free(vzArr);
+
+    //wild card stage only scats positions and mass
+    //init stage has no force values to exchange
+    if(stage == INIT_STAGE){
+        free(vxArr);
+        free(vyArr);
+        free(vzArr);
+    }
+
+    //only OWNER stage exchanges forces
+    if(stage == NEWCOMER_STAGE){
+        free(vxArr);
+        free(vyArr);
+        free(vzArr);
+        free(fxArr);
+        free(fyArr);
+        free(fzArr);
+    }
+
     free(displ);
     free(sizeArr);
+
+    if(stage == WILDCARD_STAGE || stage == NEWCOMER_STAGE){
+        free(transDispl);
+        free(transSizeArr);
+    }
 }
 // Function to print center of mass and average velocity
 /*
@@ -320,10 +341,10 @@ void updateOwner(Body** oct, Body* myOct){
     *oct = (Body *) calloc(procNum, sizeof(Body));
 
     for(i=0;i<procNum;i++){
-        initBody(&(*oct)[i], 1);  // initially 1 elements     
-        (*oct)[i].fx = (double *)malloc(1 * sizeof(double));
-        (*oct)[i].fy = (double *)malloc(1 * sizeof(double));
-        (*oct)[i].fz = (double *)malloc(1 * sizeof(double));
+        initBody(&(*oct)[i], 0);  // initially 0 elements     
+        (*oct)[i].fx = (double *)malloc(0 * sizeof(double));
+        (*oct)[i].fy = (double *)malloc(0 * sizeof(double));
+        (*oct)[i].fz = (double *)malloc(0 * sizeof(double));
     }
 
     for(i=0; i< myOct->size; i++){
@@ -403,9 +424,81 @@ void updateOwner(Body** oct, Body* myOct){
     //push each octant size into an array then boardcast the array 
     //i do boardcast instead of scatter since the array is needed for MPI_Scatterv() 
     for(i=0;i<procNum;i++){
+        //FIXME maybe .used, not sure yet
         sizeArr[i]=(*oct)[i].size;
     }
     
+}
+
+void prepScatNewcomer(Body** oct){
+   int i;
+   int bodyNum=0;
+   int offset=0;
+   int size;
+
+    //get total number of bodies in the deck
+   for (i=0; i<procNum; i++){
+       if(i!=rank){
+           bodyNum = bodyNum + (*oct)[i].size;
+        }
+    }
+   
+   //allocate memory to buffers 
+   xArr =(double*) calloc(bodyNum, sizeof(double));      
+   yArr =(double*) calloc(bodyNum, sizeof(double));      
+   zArr =(double*) calloc(bodyNum, sizeof(double));      
+
+   //allocate memory to buffers 
+   vxArr =(double*) calloc(bodyNum, sizeof(double));      
+   vyArr =(double*) calloc(bodyNum, sizeof(double));      
+   vzArr =(double*) calloc(bodyNum, sizeof(double));      
+   
+   //allocate memory to buffers 
+   fxArr =(double*) calloc(bodyNum, sizeof(double));      
+   fyArr =(double*) calloc(bodyNum, sizeof(double));      
+   fzArr =(double*) calloc(bodyNum, sizeof(double));      
+   
+   massArr =(double*) calloc(bodyNum, sizeof(double));      
+   
+   displ =(int*) calloc(procNum, sizeof(int));
+   sizeArr =(int*) calloc(procNum, sizeof(int));
+   
+   //append things into their array buffer
+   //the Arr buffers collects all the elements that are wildcards to octants
+   for(i=0; i<procNum;i++){
+       if(i!=rank){
+           size = (*oct)[i].size;
+           sizeArr[i] = size;
+           displ[i] = offset;
+           memcpy(xArr+offset, (*oct)[i].x, size*sizeof(double));
+           memcpy(yArr+offset, (*oct)[i].y, size*sizeof(double));
+           memcpy(zArr+offset, (*oct)[i].z, size*sizeof(double));
+
+           memcpy(vxArr+offset, (*oct)[i].vx, size*sizeof(double));
+           memcpy(vyArr+offset, (*oct)[i].vy, size*sizeof(double));
+           memcpy(vzArr+offset, (*oct)[i].vz, size*sizeof(double));
+           
+           memcpy(fxArr+offset, (*oct)[i].fx, size*sizeof(double));
+           memcpy(fyArr+offset, (*oct)[i].fy, size*sizeof(double));
+           memcpy(fzArr+offset, (*oct)[i].fz, size*sizeof(double));
+           
+           memcpy(massArr+offset, (*oct)[i].mass, size*sizeof(double));
+
+           offset+=size;
+       }
+   }
+   
+   //transpose initOctSize and displ
+   transSizeArr =(int*) calloc(procNum, sizeof(int));
+   transDispl =(int*) calloc(procNum, sizeof(int));
+   barrier();
+   MPI_Alltoall(sizeArr, 1, MPI_INT, transSizeArr, 1, MPI_INT, MPI_COMM_WORLD);
+   
+   offset=0;
+   for(i=0;i<procNum;i++){
+        transDispl[i] = offset;
+        offset+=transSizeArr[i];
+   }
 }
 
 //MPI initialization function
@@ -478,7 +571,7 @@ void sliceOctants(Body** oct){
     *oct = (Body *) calloc(procNum, sizeof(Body));
 
     for(i=0;i<procNum;i++){
-        initBody(&(*oct)[i], 1);  // initially 1 elements     
+        initBody(&(*oct)[i], 0);  // initially 1 elements     
     }
    
     for(i=0;i<N; i++){
@@ -658,7 +751,7 @@ void prepScatWildcards(Body** wildCardsTo){
    int offset=0;
    int size;
 
-    //get total number of bodies in the problem
+    //get total number of bodies in the deck
    for (i=0; i<procNum; i++){
        if(i!=rank){
            bodyNum = bodyNum + (*wildCardsTo)[i].size;
@@ -737,6 +830,12 @@ void exchangeCards(Body* myWildCards){
    //printf("%d: %d\n",rank, myWildCards->size);
 }
 
+void exchangeNewcomer(Body* newComer){
+}
+
+void welcomeNewcomer(Body* myOct, Body* newComer){
+}
+
 void estimateDU(Body* myOct, Body** wildCardsTo){
     int i;
     double x,y,z;
@@ -748,7 +847,7 @@ void estimateDU(Body* myOct, Body** wildCardsTo){
     //still dynamically allocate even though i know it is always gonna be 3 axises 
 
     for(i=0;i<procNum;i++){
-        initBody(&(*wildCardsTo)[i], 1);  // initially 1 elements     
+        initBody(&(*wildCardsTo)[i], 0);  // initially 0 elements     
     }
 
     //duPlane[0] ----> plane XY DU
