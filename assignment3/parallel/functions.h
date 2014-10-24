@@ -22,6 +22,15 @@ void removeBody(Body *a, int index);
 //de-allocate memory in the octant
 void freeBody(Body *a);
 
+//de-allocate memory in the my wildcards
+void freeWildCards(Body *a);
+
+//de-allocate memory in the wildcards' decks
+void freeCardsDeck(Body **a);
+
+//de-allocate memory for new comers
+void freeNewcomer(Body *a);
+
 //de-allocate everything in the space
 void freeOctants(Body **octRef);
 
@@ -86,5 +95,7 @@ void updateOwner(Body** oct, Body* myOct);
 void prepScatNewcomer(Body** oct);
 
 void exchangeNewcomer(Body* newComer);
+
+void insertNewcomer(Body* a, Body* newComer, int i);
 
 void welcomeNewcomer(Body* myOct, Body* newComer);

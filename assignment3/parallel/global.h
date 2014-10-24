@@ -21,7 +21,7 @@ typedef struct {
     double *vz;
     double *mass;
     
-    //these are the force calc results, they never scats
+    //these are the force calc results, they only scat when the bodies crosses octants
     double *fx;     // X force array for N bodies
     double *fy;     // Y velocity array for N bodies
     double *fz;     // Z velocity array for N bodies

@@ -98,6 +98,10 @@ void freeBody(Body *a) {
       free(a->vy);
       free(a->vz);
       free(a->mass);
+      
+      if(a->fx) free(a->fx);
+      if(a->fy) free(a->fy);
+      if(a->fz) free(a->fz);
 
       a->used = a->size = 0;
 }
@@ -107,6 +111,37 @@ void freeOctants(Body** octRef){
     for(i=0;i<procNum;i++){
         freeBody(&(*octRef)[i]);
     }
+}
+
+void freeWildCards(Body *a) {
+      free(a->x);
+      free(a->y);
+      free(a->z);
+      free(a->mass);
+
+      a->used = a->size = 0;
+}
+
+void freeCardsDeck(Body **a){
+    int i;
+    for(i=0;i<procNum;i++){
+        freeWildCards(&(*a)[i]);
+    }
+}
+
+void freeNewcomer(Body *a) {
+      free(a->x);
+      free(a->y);
+      free(a->z);
+      free(a->vx);
+      free(a->vy);
+      free(a->vz);
+      free(a->fx);
+      free(a->fy);
+      free(a->fz);
+      free(a->mass);
+
+      a->used = a->size = 0;
 }
 
 void freeBuffer(int stage){
@@ -424,7 +459,6 @@ void updateOwner(Body** oct, Body* myOct){
     //push each octant size into an array then boardcast the array 
     //i do boardcast instead of scatter since the array is needed for MPI_Scatterv() 
     for(i=0;i<procNum;i++){
-        //FIXME maybe .used, not sure yet
         sizeArr[i]=(*oct)[i].size;
     }
     
@@ -645,6 +679,7 @@ void scatOctants(Body* myOct){
    //allocate coordinates for bodies in the octant 
    mySize = sizeArr[rank];
    
+   printf("%d has %d init bodies\n",rank, mySize); 
    myOct->x = (double *) calloc(mySize, sizeof(double)); 
    myOct->y = (double *) calloc(mySize, sizeof(double)); 
    myOct->z = (double *) calloc(mySize, sizeof(double)); 
@@ -806,7 +841,8 @@ void exchangeCards(Body* myWildCards){
    for(i=0;i<procNum;i++){
        mySize += transSizeArr[i];
    }
-   
+   printf("%d has %d wildcards\n",rank, mySize);
+    
    myWildCards->x = (double *) calloc(mySize, sizeof(double)); 
    myWildCards->y = (double *) calloc(mySize, sizeof(double)); 
    myWildCards->z = (double *) calloc(mySize, sizeof(double)); 
@@ -831,9 +867,91 @@ void exchangeCards(Body* myWildCards){
 }
 
 void exchangeNewcomer(Body* newComer){
+    int i;
+    int ncSize=0;
+   
+   //allocate coordinates for bodies in the octant
+   for(i=0;i<procNum;i++){
+       ncSize += transSizeArr[i];
+   }
+    printf("%d has %d newComers\n", rank, ncSize);
+     
+    newComer->x = (double *) calloc(ncSize, sizeof(double));
+    newComer->y = (double *) calloc(ncSize, sizeof(double));
+    newComer->z = (double *) calloc(ncSize, sizeof(double));
+
+    newComer->vx = (double *) calloc(ncSize, sizeof(double));
+    newComer->vy = (double *) calloc(ncSize, sizeof(double));
+    newComer->vz = (double *) calloc(ncSize, sizeof(double));
+    
+    newComer->fx = (double *) calloc(ncSize, sizeof(double));
+    newComer->fy = (double *) calloc(ncSize, sizeof(double));
+    newComer->fz = (double *) calloc(ncSize, sizeof(double));
+    
+    newComer->mass = (double *) calloc(ncSize, sizeof(double));
+
+    barrier();
+    
+    MPI_Alltoallv(xArr, sizeArr, displ, MPI_DOUBLE, newComer->x, transSizeArr, transDispl, MPI_DOUBLE, MPI_COMM_WORLD);
+    MPI_Alltoallv(yArr, sizeArr, displ, MPI_DOUBLE, newComer->y, transSizeArr, transDispl, MPI_DOUBLE, MPI_COMM_WORLD);
+    MPI_Alltoallv(zArr, sizeArr, displ, MPI_DOUBLE, newComer->z, transSizeArr, transDispl, MPI_DOUBLE, MPI_COMM_WORLD);
+
+    MPI_Alltoallv(vxArr, sizeArr, displ, MPI_DOUBLE, newComer->vx, transSizeArr, transDispl, MPI_DOUBLE, MPI_COMM_WORLD);
+    MPI_Alltoallv(vyArr, sizeArr, displ, MPI_DOUBLE, newComer->vy, transSizeArr, transDispl, MPI_DOUBLE, MPI_COMM_WORLD);
+    MPI_Alltoallv(vzArr, sizeArr, displ, MPI_DOUBLE, newComer->vz, transSizeArr, transDispl, MPI_DOUBLE, MPI_COMM_WORLD);
+
+    MPI_Alltoallv(fxArr, sizeArr, displ, MPI_DOUBLE, newComer->fx, transSizeArr, transDispl, MPI_DOUBLE, MPI_COMM_WORLD);
+    MPI_Alltoallv(fyArr, sizeArr, displ, MPI_DOUBLE, newComer->fy, transSizeArr, transDispl, MPI_DOUBLE, MPI_COMM_WORLD);
+    MPI_Alltoallv(fzArr, sizeArr, displ, MPI_DOUBLE, newComer->fz, transSizeArr, transDispl, MPI_DOUBLE, MPI_COMM_WORLD);
+    
+    MPI_Alltoallv(massArr, sizeArr, displ, MPI_DOUBLE, newComer->mass, transSizeArr, transDispl, MPI_DOUBLE, MPI_COMM_WORLD);
+   
+   //each octant has its own newComer size, ncSize 
+   newComer->size = newComer->used = ncSize;
+}
+void insertNewcomer(Body* a, Body* newComer, int i){
+      
+      if (a->used == a->size) {
+          a->size++;
+          
+          a->x = (double *)realloc(a->x, a->size * sizeof(double));
+          a->y = (double *)realloc(a->y, a->size * sizeof(double));
+          a->z = (double *)realloc(a->z, a->size * sizeof(double));
+
+          a->vx = (double *)realloc(a->vx, a->size * sizeof(double));
+          a->vy = (double *)realloc(a->vy, a->size * sizeof(double));
+          a->vz = (double *)realloc(a->vz, a->size * sizeof(double));
+
+          a->fx = (double *)realloc(a->fx, a->size * sizeof(double));
+          a->fy = (double *)realloc(a->fy, a->size * sizeof(double));
+          a->fz = (double *)realloc(a->fz, a->size * sizeof(double));
+
+          a->mass = (double *)realloc(a->mass, a->size * sizeof(double));
+      }
+      
+      a->x[a->used] = newComer->x[i];
+      a->y[a->used] = newComer->y[i];
+      a->z[a->used] = newComer->z[i];
+      
+      a->vx[a->used] = newComer->vx[i];
+      a->vy[a->used] = newComer->vy[i];
+      a->vz[a->used] = newComer->vz[i];
+      
+      a->fx[a->used] = newComer->fx[i];
+      a->fy[a->used] = newComer->fy[i];
+      a->fz[a->used] = newComer->fz[i];
+
+      a->mass[a->used] = newComer->mass[i];
+
+      a->used++;
 }
 
 void welcomeNewcomer(Body* myOct, Body* newComer){
+    int i;
+
+    for(i=0; i < newComer->size; i++){
+        insertNewcomer(myOct, newComer, i);
+    }
 }
 
 void estimateDU(Body* myOct, Body** wildCardsTo){

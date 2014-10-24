@@ -51,7 +51,7 @@ main(int argc, char **argv){
         freeBuffer(INIT_STAGE);
         //debug prints
         //comp. func.
-        printOct(&myOct,rank);
+        //printOct(&myOct,rank);
         
         /////////////////////////////////////////////////////////
         //                    Time Step Phase                  //
@@ -80,12 +80,18 @@ main(int argc, char **argv){
         //prepare buffer for newcomers 
         prepScatNewcomer(&oct);
 
-        //FIXME: implement this and then we are there, hopefully 
         //exchange newcomers for each octant
         exchangeNewcomer(&newComer);
 
         //append new comers into my octant
         welcomeNewcomer(&myOct, &newComer);
+        //FIXME: clear new comer buffer and wildcards
+        freeCardsDeck(&wildCardsTo);
+        freeNewcomer(&newComer);
+        freeWildCards(&myWildCards);
+        freeOctants(&oct);
+        //must free all buffers used in collective operations
+        freeBuffer(NEWCOMER_STAGE);
    }else{
         /////////////////////////////////////////////////////////
         //                    init  Phase                      //
@@ -101,7 +107,7 @@ main(int argc, char **argv){
         scatOctants(&myOct);
 
         //debug prints
-        printOct(&myOct,rank);
+        //printOct(&myOct,rank);
         
         /////////////////////////////////////////////////////////
         //                    Time Step Phase                  //
@@ -130,6 +136,14 @@ main(int argc, char **argv){
 
         //append new comers into my octant
         welcomeNewcomer(&myOct, &newComer);
+        
+        //FIXME: clear new comer buffer and wildcards
+        freeCardsDeck(&wildCardsTo);
+        freeNewcomer(&newComer);
+        freeWildCards(&myWildCards);
+        freeOctants(&oct);
+        //must free all buffers used in collective operations
+        freeBuffer(NEWCOMER_STAGE);
    }
    MPI_Finalize();           
 }
