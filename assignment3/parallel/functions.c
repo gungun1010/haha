@@ -909,6 +909,7 @@ void exchangeNewcomer(Body* newComer){
    //each octant has its own newComer size, ncSize 
    newComer->size = newComer->used = ncSize;
 }
+
 void insertNewcomer(Body* a, Body* newComer, int i){
       
       if (a->used == a->size) {
