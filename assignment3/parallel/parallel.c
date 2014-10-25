@@ -9,7 +9,7 @@ double etime, etime0, etime1, cptime;
 
 //top-level function to wrap around body movement operations, called in main()
 void timeLapse(){
-    if(rank == ROOT)printf("**************************** %d ***************************\n",ts);
+    //if(rank == ROOT)printf("**************************** %d ***************************\n",ts);
     barrier();                                                     
     if (ts%128 == 0){
          timing(&etime0,&cptime);
@@ -121,7 +121,7 @@ main(int argc, char **argv){
         etime = etime + (etime1 - etime0);
         
         barrier(); 
-        printf ("\nProc %d: Time for %d timesteps with %d bodies: %9.4f seconds\n",rank, K, N, etime);
+        printf ("\nProc %d: Time for %d timesteps with %d bodies: %.3le seconds\n",rank, K, N, etime);
    }else{
         etime=0;
         /////////////////////////////////////////////////////////
@@ -154,7 +154,7 @@ main(int argc, char **argv){
         etime = etime + (etime1 - etime0);
         
         barrier();
-        printf ("\nProc %d: Time for %d timesteps with %d bodies: %9.4f seconds\n",rank, K, N, etime);
+        printf ("\nProc %d: Time for %d timesteps with %d bodies: %.3le seconds\n",rank, K, N, etime);
    }
    MPI_Finalize();           
 }
