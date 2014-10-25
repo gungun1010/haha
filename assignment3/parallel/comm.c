@@ -143,7 +143,6 @@ void scatOctants(Body* myOct){
    //allocate coordinates for bodies in the octant 
    mySize = sizeArr[rank];
    
-   printf("%d has %d init bodies\n",rank, mySize); 
    myOct->x = (double *) calloc(mySize, sizeof(double)); 
    myOct->y = (double *) calloc(mySize, sizeof(double)); 
    myOct->z = (double *) calloc(mySize, sizeof(double)); 
@@ -264,7 +263,6 @@ void exchangeCards(Body* myWildCards){
    for(i=0;i<procNum;i++){
        mySize += transSizeArr[i];
    }
-   printf("%d has %d wildcards\n",rank, mySize);
     
    myWildCards->x = (double *) calloc(mySize, sizeof(double)); 
    myWildCards->y = (double *) calloc(mySize, sizeof(double)); 
@@ -368,7 +366,6 @@ void exchangeNewcomer(Body* newComer){
    for(i=0;i<procNum;i++){
        ncSize += transSizeArr[i];
    }
-    printf("%d has %d newComers\n", rank, ncSize);
      
     newComer->x = (double *) calloc(ncSize, sizeof(double));
     newComer->y = (double *) calloc(ncSize, sizeof(double));
@@ -405,7 +402,7 @@ void exchangeNewcomer(Body* newComer){
 }
 
 // Function to print center of mass and average velocity
-/*
+/*modified from:
   Author: Andrew Sherman, Yale University
 
   Date: 2/23/2013
