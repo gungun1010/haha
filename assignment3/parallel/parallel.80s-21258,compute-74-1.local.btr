@@ -1,6 +1,0 @@
-
-parallel:21258 terminated with signal 11 at PC=4019f8 SP=7fffc2a3c160.  Backtrace:
-parallel(sliceOctants+0xa8)[0x4019f8]
-parallel(main+0xa4)[0x401284]
-/lib64/libc.so.6(__libc_start_main+0xfd)[0x30dfe1ecdd]
-parallel[0x401119]

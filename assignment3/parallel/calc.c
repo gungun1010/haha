@@ -491,72 +491,72 @@ void updateOwner(Body** oct, Body* myOct){
         switch (rank){
             case 0:
                 if(myOct->x[i]<0. || myOct->y[i]<0. || myOct->z[i]<0.){//!0
-                    printf("run away from %d",rank);
+                    //printf("run away from %d",rank);
                     owner = findOwner(myOct, i);
-                    printf(" to %d\n", owner);
+                    //printf(" to %d\n", owner);
                     addToOwner(&(*oct)[owner], myOct, i);
                     removeBody(myOct,i);
                 }
                 break;
             case 1:
                 if(myOct->x[i]<0. || myOct->y[i]>=0. || myOct->z[i]<0.){//!1
-                    printf("run away from %d",rank);
+                    //printf("run away from %d",rank);
                     owner = findOwner(myOct, i);
-                    printf(" to %d\n", owner);
+                    //printf(" to %d\n", owner);
                     addToOwner(&(*oct)[owner], myOct, i);
                     removeBody(myOct,i);
                 }
                 break;
             case 2:
                 if(myOct->x[i]>=0. || myOct->y[i]>=0. || myOct->z[i]<0.){//!2
-                    printf("run away from %d",rank);
+                    //printf("run away from %d",rank);
                     owner = findOwner(myOct, i);
-                    printf(" to %d\n", owner);
+                    //printf(" to %d\n", owner);
                     addToOwner(&(*oct)[owner], myOct, i);
                     removeBody(myOct,i);
                 }
                 break;
             case 3:
                 if(myOct->x[i]>=0. || myOct->y[i]<0. || myOct->z[i]<0.){//!3
-                    printf("run away from %d",rank);
+                    //printf("run away from %d",rank);
                     owner = findOwner(myOct, i);
-                    printf(" to %d\n", owner);
+                    //printf(" to %d\n", owner);
                     addToOwner(&(*oct)[owner], myOct, i);
                     removeBody(myOct,i);
                 }
                 break;
             case 4:
                 if(myOct->x[i]<0. || myOct->y[i]<0. || myOct->z[i]>=0.){//!4
-                    printf("run away from %d",rank);
+                    //printf("run away from %d",rank);
                     owner = findOwner(myOct, i);
-                    printf(" to %d\n", owner);
+                    //printf(" to %d\n", owner);
                     addToOwner(&(*oct)[owner], myOct, i);
                     removeBody(myOct,i);
                 }
                 break;
             case 5:
                 if(myOct->x[i]<0. || myOct->y[i]>=0. || myOct->z[i]>=0.){//!5
-                    printf("run away from %d",rank);
+                    //printf("run away from %d",rank);
                     owner = findOwner(myOct, i);
-                    printf(" to %d\n", owner);
+                    //printf(" to %d\n", owner);
                     addToOwner(&(*oct)[owner], myOct, i);
                     removeBody(myOct,i);
                 }
                 break;
             case 6:
                 if(myOct->x[i]>=0. || myOct->y[i]>=0. || myOct->z[i]>=0.){//!6
-                    printf("run away from %d",rank);
+                    //printf("run away from %d",rank);
                     owner = findOwner(myOct, i);
-                    printf(" to %d\n", owner);
+                    //printf(" to %d\n", owner);
                     addToOwner(&(*oct)[owner], myOct, i);
                     removeBody(myOct,i);
                 }
                 break;
             case 7:
                 if(myOct->x[i]>=0. || myOct->y[i]<0. || myOct->z[i]>=0.){//!1
-                    printf("run away from %d",rank);
+                    //printf("run away from %d",rank);
                     owner = findOwner(myOct, i);
-                    printf(" to %d\n", owner);
+                    //printf(" to %d\n", owner);
                     addToOwner(&(*oct)[owner], myOct, i);
                     removeBody(myOct,i);
                 }

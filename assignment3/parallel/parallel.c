@@ -8,7 +8,7 @@ Body myOct, myWildCards, newComer;
 
 //top-level function to wrap around body movement operations, called in main()
 void timeLapse(){
-    if(rank == ROOT)printf("**************************** %d ***************************\n",ts);
+    //if(rank == ROOT)printf("**************************** %d ***************************\n",ts);
     barrier();                                                     
     if (ts%128 == 0) output(ts, &myOct); // Print output if necessary
     //estimate DU of each of my bodies

@@ -1,3 +1,3 @@
 #!/bin/bash
 
-time mpiexec -n 8 parallel < ../data/testdata1
+time mpiexec -n 8 parallel < ../data/testdata2

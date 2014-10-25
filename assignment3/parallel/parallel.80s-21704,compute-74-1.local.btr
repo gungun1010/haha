@@ -1,8 +1,0 @@
-
-parallel:21704 terminated with signal 11 at PC=2b0156c8fda4 SP=7fff37f975b0.  Backtrace:
-/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(opal_memory_ptmalloc2_int_realloc+0x134)[0x2b0156c8fda4]
-/home/apps/fas/MPI/OpenMPI/1.6.5-intel/lib/libmpi.so.1(opal_memory_ptmalloc2_realloc+0x1e0)[0x2b0156c915c0]
-parallel(sliceOctants+0x721)[0x402071]
-parallel(main+0xa4)[0x401284]
-/lib64/libc.so.6(__libc_start_main+0xfd)[0x30dfe1ecdd]
-parallel[0x401119]

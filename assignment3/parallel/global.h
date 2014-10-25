@@ -3,8 +3,6 @@
 #include <string.h>
 #include <math.h>
 
-#define NUM_PROCESSORS 8
-
 #define ROOT 0
 #define DU_THRES 5.
 #define INIT_STAGE 0xA
