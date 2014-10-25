@@ -5,7 +5,7 @@ void printOct(Body *a, int i){
     int j;
     printf("*************************** octant %d ******************************\n",i);
     
-    for(j=0;j<a->used;j++){
+    for(j=0;j<a->size;j++){
         printf("coordinate: [%.3le, %.3le, %.3le] ",a->x[j],a->y[j],a->z[j]);
         printf("velocity: [%.3le, %.3le, %.3le] ",a->vx[j],a->vy[j],a->vz[j]);
         printf("mass: %.3le\n",a->mass[j]);
@@ -263,10 +263,10 @@ void estimateDU(Body* myOct, Body** wildCardsTo){
     double* duPlane;
     double* duAxis;
     double duOrigin;
-    
-    *wildCardsTo = (Body *) calloc(procNum, sizeof(Body));
-    //still dynamically allocate even though i know it is always gonna be 3 axises 
 
+    *wildCardsTo = (Body *) calloc(procNum, sizeof(Body));
+
+    //still dynamically allocate even though i know it is always gonna be 3 axises 
     for(i=0;i<procNum;i++){
         initBody(&(*wildCardsTo)[i], 0);  // initially 0 elements     
     }
@@ -447,13 +447,13 @@ void addToOwner(Body* a, Body* myOct, int i){
           a->y = (double *)realloc(a->y, a->size * sizeof(double));
           a->z = (double *)realloc(a->z, a->size * sizeof(double));
 
-          a->vx = (double *)realloc(a->x, a->size * sizeof(double));
-          a->vy = (double *)realloc(a->y, a->size * sizeof(double));
-          a->vz = (double *)realloc(a->z, a->size * sizeof(double));
+          a->vx = (double *)realloc(a->vx, a->size * sizeof(double));
+          a->vy = (double *)realloc(a->vy, a->size * sizeof(double));
+          a->vz = (double *)realloc(a->vz, a->size * sizeof(double));
 
-          a->fx = (double *)realloc(a->x, a->size * sizeof(double));
-          a->fy = (double *)realloc(a->y, a->size * sizeof(double));
-          a->fz = (double *)realloc(a->z, a->size * sizeof(double));
+          a->fx = (double *)realloc(a->fx, a->size * sizeof(double));
+          a->fy = (double *)realloc(a->fy, a->size * sizeof(double));
+          a->fz = (double *)realloc(a->fz, a->size * sizeof(double));
 
           a->mass = (double *)realloc(a->mass, a->size * sizeof(double));
       }
@@ -462,13 +462,13 @@ void addToOwner(Body* a, Body* myOct, int i){
       a->y[a->used] = myOct->y[i];
       a->z[a->used] = myOct->z[i];
       
-      a->vx[a->used] = myOct->x[i];
-      a->vy[a->used] = myOct->y[i];
-      a->vz[a->used] = myOct->z[i];
+      a->vx[a->used] = myOct->vx[i];
+      a->vy[a->used] = myOct->vy[i];
+      a->vz[a->used] = myOct->vz[i];
       
-      a->fx[a->used] = myOct->x[i];
-      a->fy[a->used] = myOct->y[i];
-      a->fz[a->used] = myOct->z[i];
+      a->fx[a->used] = myOct->fx[i];
+      a->fy[a->used] = myOct->fy[i];
+      a->fz[a->used] = myOct->fz[i];
       
       a->mass[a->used] = myOct->mass[i];
       a->used++;
@@ -491,64 +491,72 @@ void updateOwner(Body** oct, Body* myOct){
         switch (rank){
             case 0:
                 if(myOct->x[i]<0. || myOct->y[i]<0. || myOct->z[i]<0.){//!0
-                    printf("run away from %d\n",rank);
+                    printf("run away from %d",rank);
                     owner = findOwner(myOct, i);
+                    printf(" to %d\n", owner);
                     addToOwner(&(*oct)[owner], myOct, i);
                     removeBody(myOct,i);
                 }
                 break;
             case 1:
                 if(myOct->x[i]<0. || myOct->y[i]>=0. || myOct->z[i]<0.){//!1
-                    printf("run away from %d\n",rank);
+                    printf("run away from %d",rank);
                     owner = findOwner(myOct, i);
+                    printf(" to %d\n", owner);
                     addToOwner(&(*oct)[owner], myOct, i);
                     removeBody(myOct,i);
                 }
                 break;
             case 2:
                 if(myOct->x[i]>=0. || myOct->y[i]>=0. || myOct->z[i]<0.){//!2
-                    printf("run away from %d\n",rank);
+                    printf("run away from %d",rank);
                     owner = findOwner(myOct, i);
+                    printf(" to %d\n", owner);
                     addToOwner(&(*oct)[owner], myOct, i);
                     removeBody(myOct,i);
                 }
                 break;
             case 3:
                 if(myOct->x[i]>=0. || myOct->y[i]<0. || myOct->z[i]<0.){//!3
-                    printf("run away from %d\n",rank);
+                    printf("run away from %d",rank);
                     owner = findOwner(myOct, i);
+                    printf(" to %d\n", owner);
                     addToOwner(&(*oct)[owner], myOct, i);
                     removeBody(myOct,i);
                 }
                 break;
             case 4:
                 if(myOct->x[i]<0. || myOct->y[i]<0. || myOct->z[i]>=0.){//!4
-                    printf("run away from %d\n",rank);
+                    printf("run away from %d",rank);
                     owner = findOwner(myOct, i);
+                    printf(" to %d\n", owner);
                     addToOwner(&(*oct)[owner], myOct, i);
                     removeBody(myOct,i);
                 }
                 break;
             case 5:
                 if(myOct->x[i]<0. || myOct->y[i]>=0. || myOct->z[i]>=0.){//!5
-                    printf("run away from %d\n",rank);
+                    printf("run away from %d",rank);
                     owner = findOwner(myOct, i);
+                    printf(" to %d\n", owner);
                     addToOwner(&(*oct)[owner], myOct, i);
                     removeBody(myOct,i);
                 }
                 break;
             case 6:
                 if(myOct->x[i]>=0. || myOct->y[i]>=0. || myOct->z[i]>=0.){//!6
-                    printf("run away from %d\n",rank);
+                    printf("run away from %d",rank);
                     owner = findOwner(myOct, i);
+                    printf(" to %d\n", owner);
                     addToOwner(&(*oct)[owner], myOct, i);
                     removeBody(myOct,i);
                 }
                 break;
             case 7:
                 if(myOct->x[i]>=0. || myOct->y[i]<0. || myOct->z[i]>=0.){//!1
-                    printf("run away from %d\n",rank);
+                    printf("run away from %d",rank);
                     owner = findOwner(myOct, i);
+                    printf(" to %d\n", owner);
                     addToOwner(&(*oct)[owner], myOct, i);
                     removeBody(myOct,i);
                 }

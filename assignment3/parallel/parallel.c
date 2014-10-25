@@ -59,43 +59,54 @@ main(int argc, char **argv){
         //                    Time Step Phase                  //
         /////////////////////////////////////////////////////////
         for(ts=0; ts<K; ts++){
-            printf("%d\n",ts);
+            printf("**************************** %d ***************************\n",ts);
             barrier();                                                     
             if (ts%128 == 0) output(ts, &myOct); // Print output if necessary
             //estimate DU of each of my bodies
             //This defines what wildCardsTo is (which wildcard to send to dest).
             //comp. func.
+            barrier();
             estimateDU(&myOct, &wildCardsTo);
 
             //scat my wildcards to all 
             //comm. func.
+            barrier();
             prepScatWildcards(&wildCardsTo);
+            barrier();
             exchangeCards(&myWildCards);
-            //FIXME: need to free wildcard 
             barrier();
             //comp. func.
             calcForce(&myOct, &myWildCards);
             
             //printOct(&myOct,rank);
             //must free all buffers used in collective operations
+            barrier();
             freeBuffer(WILDCARD_STAGE);
             //comp. func.
+            barrier();
             updateOwner(&oct, &myOct);//recycle the oct buffer here
             
             //prepare buffer for newcomers 
+            barrier();
             prepScatNewcomer(&oct);
-
             //exchange newcomers for each octant
+            barrier();
             exchangeNewcomer(&newComer);
 
             //append new comers into my octant
+            barrier();
             welcomeNewcomer(&myOct, &newComer);
-            //FIXME: clear new comer buffer and wildcards
+            //free all kinds of buffers
+            barrier();
             freeCardsDeck(&wildCardsTo);
+            barrier();
             freeNewcomer(&newComer);
+            barrier();
             freeWildCards(&myWildCards);
+            barrier();
             freeOctants(&oct);
             //must free all buffers used in collective operations
+            barrier();
             freeBuffer(NEWCOMER_STAGE);
         }
         output(ts, &myOct); // Print output if necessary
@@ -124,10 +135,14 @@ main(int argc, char **argv){
             barrier();  
             if (ts%128 == 0) output(ts, &myOct); // Print output if necessary
             //estimate DU of each of my bodies
+            barrier();
             estimateDU(&myOct, &wildCardsTo);
 
             //scat my wildcards to all 
+            printf("2. exchange wildcards at %d\n",rank);
+            barrier();
             prepScatWildcards(&wildCardsTo);
+            barrier();
             exchangeCards(&myWildCards);
             
             barrier();
@@ -135,24 +150,33 @@ main(int argc, char **argv){
 
             //printOct(&myOct,rank);
             //must free all buffers used in collective operations
+            barrier();
             freeBuffer(WILDCARD_STAGE);
+            barrier();
             updateOwner(&oct, &myOct);
             
             //prepare buffer for newcomers 
+            barrier();
             prepScatNewcomer(&oct);
 
             //exchange newcomers for each octant
+            barrier();
             exchangeNewcomer(&newComer);
             //FIXME: when there is a new comer program hangs
             //append new comers into my octant
+            barrier();
             welcomeNewcomer(&myOct, &newComer);
-            
+            barrier();
             //free all kinds of buffers 
             freeCardsDeck(&wildCardsTo);
+            barrier();
             freeNewcomer(&newComer);
+            barrier();
             freeWildCards(&myWildCards);
+            barrier();
             freeOctants(&oct);
             //must free all buffers used in collective operations
+            barrier();
             freeBuffer(NEWCOMER_STAGE);
         }
         output(ts, &myOct); // Print output if necessary
