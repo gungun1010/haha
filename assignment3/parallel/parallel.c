@@ -5,17 +5,26 @@ int i, wctime;
 int ts;
 Body *oct, *wildCardsTo;
 Body myOct, myWildCards, newComer;
+double etime, etime0, etime1, cptime;
 
 //top-level function to wrap around body movement operations, called in main()
 void timeLapse(){
-    //if(rank == ROOT)printf("**************************** %d ***************************\n",ts);
+    if(rank == ROOT)printf("**************************** %d ***************************\n",ts);
     barrier();                                                     
-    if (ts%128 == 0) output(ts, &myOct); // Print output if necessary
+    if (ts%128 == 0){
+         timing(&etime0,&cptime);
+         output(ts, &myOct); // Print output if necessary
+         timing(&etime1, &cptime);
+         etime = etime + (etime1 - etime0);
+    }
     //estimate DU of each of my bodies
     //This defines what wildCardsTo is (which wildcard to send to dest).
     barrier();
-    estimateDU(&myOct, &wildCardsTo);
 
+    timing(&etime0,&cptime);
+    estimateDU(&myOct, &wildCardsTo);
+    timing(&etime1, &cptime);
+    etime = etime + (etime1 - etime0);
     //scat my wildcards to all 
     barrier();
     prepScatWildcards(&wildCardsTo);
@@ -23,7 +32,10 @@ void timeLapse(){
     exchangeCards(&myWildCards);
     barrier();
     //main force calculation 
+    timing(&etime0,&cptime);
     calcForce(&myOct, &myWildCards);
+    timing(&etime1, &cptime);
+    etime = etime + (etime1 - etime0);
     
     //must free all buffers used in collective operations
     barrier();
@@ -62,6 +74,7 @@ main(int argc, char **argv){
    init(&argc, &argv, &procNum, &rank);
    
    if (rank == 0){
+        etime=0;
         /////////////////////////////////////////////////////////
         //                    init  Phase                      //
         /////////////////////////////////////////////////////////
@@ -101,8 +114,16 @@ main(int argc, char **argv){
         for(ts=0; ts<K; ts++){
             timeLapse();
         }
+
+        timing(&etime0,&cptime);
         output(ts, &myOct); // Print output if necessary
+        timing(&etime1, &cptime);
+        etime = etime + (etime1 - etime0);
+        
+        barrier(); 
+        printf ("\nProc %d: Time for %d timesteps with %d bodies: %9.4f seconds\n",rank, K, N, etime);
    }else{
+        etime=0;
         /////////////////////////////////////////////////////////
         //                    init  Phase                      //
         /////////////////////////////////////////////////////////
@@ -126,7 +147,14 @@ main(int argc, char **argv){
         for(ts=0; ts<K; ts++){
             timeLapse();
         }
+
+        timing(&etime0,&cptime);
         output(ts, &myOct); // Print output if necessary
+        timing(&etime1, &cptime);
+        etime = etime + (etime1 - etime0);
+        
+        barrier();
+        printf ("\nProc %d: Time for %d timesteps with %d bodies: %9.4f seconds\n",rank, K, N, etime);
    }
    MPI_Finalize();           
 }
