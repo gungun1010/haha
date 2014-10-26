@@ -23,24 +23,24 @@ Conditions after timestep 384 (time = 12.000000):
      Center of Mass:   (-1.657333e-07, -7.434314e-08, 7.081062e-09)
      Average Velocity: (-1.560600e-08, -6.291000e-09, 2.288737e-10)
 
+Proc 2: Time for 512 timesteps with 800 bodies: 2.599e-05 seconds
+
+Proc 3: Time for 512 timesteps with 800 bodies: 1.693e-05 seconds
+
 
 Conditions after timestep 512 (time = 16.000000):
 
      Center of Mass:   (-2.281572e-07, -9.950714e-08, 7.996557e-09)
      Average Velocity: (-1.560600e-08, -6.291000e-09, 2.288738e-10)
 
-Proc 0: Time for 512 timesteps with 800 bodies:    0.0000 seconds
+Proc 0: Time for 512 timesteps with 800 bodies: 4.601e-05 seconds
 
-Proc 1: Time for 512 timesteps with 800 bodies:    0.0000 seconds
+Proc 1: Time for 512 timesteps with 800 bodies: 1.693e-05 seconds
 
-Proc 2: Time for 512 timesteps with 800 bodies:    0.0000 seconds
+Proc 4: Time for 512 timesteps with 800 bodies: 3.505e-05 seconds
 
-Proc 3: Time for 512 timesteps with 800 bodies:    0.0000 seconds
+Proc 5: Time for 512 timesteps with 800 bodies: 1.812e-05 seconds
 
-Proc 4: Time for 512 timesteps with 800 bodies:    0.0000 seconds
+Proc 6: Time for 512 timesteps with 800 bodies: 2.813e-05 seconds
 
-Proc 5: Time for 512 timesteps with 800 bodies:    0.0000 seconds
-
-Proc 6: Time for 512 timesteps with 800 bodies:    0.0000 seconds
-
-Proc 7: Time for 512 timesteps with 800 bodies:    0.0000 seconds
+Proc 7: Time for 512 timesteps with 800 bodies: 1.812e-05 seconds
