@@ -31,16 +31,16 @@ Conditions after timestep 512 (time = 16.000000):
 
 Proc 0: Time for 512 timesteps with 1600 bodies: 5.198e-05 seconds
 
-Proc 1: Time for 512 timesteps with 1600 bodies: 2.408e-05 seconds
+Proc 1: Time for 512 timesteps with 1600 bodies: 1.884e-05 seconds
 
-Proc 2: Time for 512 timesteps with 1600 bodies: 3.505e-05 seconds
+Proc 2: Time for 512 timesteps with 1600 bodies: 2.694e-05 seconds
 
-Proc 3: Time for 512 timesteps with 1600 bodies: 2.408e-05 seconds
+Proc 3: Time for 512 timesteps with 1600 bodies: 1.693e-05 seconds
 
-Proc 4: Time for 512 timesteps with 1600 bodies: 4.101e-05 seconds
+Proc 4: Time for 512 timesteps with 1600 bodies: 4.196e-05 seconds
 
-Proc 5: Time for 512 timesteps with 1600 bodies: 2.694e-05 seconds
+Proc 5: Time for 512 timesteps with 1600 bodies: 1.884e-05 seconds
 
-Proc 6: Time for 512 timesteps with 1600 bodies: 3.481e-05 seconds
+Proc 6: Time for 512 timesteps with 1600 bodies: 2.909e-05 seconds
 
-Proc 7: Time for 512 timesteps with 1600 bodies: 2.694e-05 seconds
+Proc 7: Time for 512 timesteps with 1600 bodies: 2.003e-05 seconds
