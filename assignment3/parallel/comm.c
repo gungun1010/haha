@@ -1,10 +1,13 @@
+//The function descriptions can be found in comm.h file
 #include "comm.h"
 #include "mpi.h"
 
+//MPI_Barrier() wrapper
 void barrier(){
     MPI_Barrier(MPI_COMM_WORLD);
 }
 
+//initializing Bodies in the octant
 void initBody(Body *a, size_t initialSize) {
       a->x = (double *)malloc(initialSize * sizeof(double));
       a->y = (double *)malloc(initialSize * sizeof(double));
@@ -18,6 +21,7 @@ void initBody(Body *a, size_t initialSize) {
       a->size = initialSize;
 }
 
+//add a body to the octant
 void insertBody(Body *a, int i){
       if (a->used == a->size) {
           a->size++;
@@ -41,6 +45,7 @@ void insertBody(Body *a, int i){
       a->used++;
 }
 
+//remove a body in the octant
 void removeBody(Body *a, int index){
    int i;
    int newSize;
@@ -358,11 +363,12 @@ void prepScatNewcomer(Body** oct){
    }
 }
 
+//all to all exchange new comers
 void exchangeNewcomer(Body* newComer){
     int i;
     int ncSize=0;
    
-   //allocate coordinates for bodies in the octant
+   //allocate coordinates memory for bodies in the octant
    for(i=0;i<procNum;i++){
        ncSize += transSizeArr[i];
    }
@@ -382,7 +388,7 @@ void exchangeNewcomer(Body* newComer){
     newComer->mass = (double *) calloc(ncSize, sizeof(double));
 
     barrier();
-    
+    //collective operation to exchange new comers 
     MPI_Alltoallv(xArr, sizeArr, displ, MPI_DOUBLE, newComer->x, transSizeArr, transDispl, MPI_DOUBLE, MPI_COMM_WORLD);
     MPI_Alltoallv(yArr, sizeArr, displ, MPI_DOUBLE, newComer->y, transSizeArr, transDispl, MPI_DOUBLE, MPI_COMM_WORLD);
     MPI_Alltoallv(zArr, sizeArr, displ, MPI_DOUBLE, newComer->z, transSizeArr, transDispl, MPI_DOUBLE, MPI_COMM_WORLD);
@@ -443,7 +449,6 @@ void output(int ts, Body* myOct) {
   }
 
   barrier(); 
-  //FIXME reduce problem
   MPI_Reduce(&cmassx, &cmassxAll, 1, MPI_DOUBLE, MPI_SUM, ROOT, MPI_COMM_WORLD);
   MPI_Reduce(&cmassy, &cmassyAll, 1, MPI_DOUBLE, MPI_SUM, ROOT, MPI_COMM_WORLD);
   MPI_Reduce(&cmassz, &cmasszAll, 1, MPI_DOUBLE, MPI_SUM, ROOT, MPI_COMM_WORLD);
