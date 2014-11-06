@@ -1,0 +1,134 @@
+N and M are 8190 and 32398
+Graph should have 8190 vertices and 32398 edges.
+ It actually has 32398 edges.
+Number of sources = 10
+sources[0] = 7431
+sources[1] = 1041
+sources[2] = 7299
+sources[3] = 867
+sources[4] = 4017
+sources[5] = 5906
+sources[6] = 68
+sources[7] = 375
+sources[8] = 7449
+sources[9] = 2945
+src = 7431, dest = 130769
+src = 7431, dest = 140295
+src = 7431, dest = 66670
+src = 7431, dest = 42701
+src = 7431, dest = 109322
+src = 7431, dest = 206864
+src = 7431, dest = 96978
+src = 7431, dest = 82729
+src = 7431, dest = 51181
+src = 7431, dest = 179334
+
+-------------------------
+src = 1041, dest = 203474
+src = 1041, dest = 95970
+src = 1041, dest = 177546
+src = 1041, dest = 262529
+src = 1041, dest = 174308
+src = 1041, dest = 30745
+src = 1041, dest = 159261
+src = 1041, dest = 225145
+src = 1041, dest = 188858
+src = 1041, dest = 121868
+
+-------------------------
+src = 7299, dest = 75964
+src = 7299, dest = 90932
+src = 7299, dest = 57956
+src = 7299, dest = 114427
+src = 7299, dest = 125370
+src = 7299, dest = 174950
+src = 7299, dest = 22645
+src = 7299, dest = 60843
+src = 7299, dest = 24556
+src = 7299, dest = 104647
+
+-------------------------
+src = 867, dest = 167729
+src = 867, dest = 142204
+src = 867, dest = 62285
+src = 867, dest = 54907
+src = 867, dest = 82542
+src = 867, dest = 201217
+src = 867, dest = 109936
+src = 867, dest = 130268
+src = 867, dest = 93981
+src = 867, dest = 186505
+
+-------------------------
+src = 4017, dest = 171214
+src = 4017, dest = 63710
+src = 4017, dest = 147829
+src = 4017, dest = 232812
+src = 4017, dest = 144591
+src = 4017, dest = 32161
+src = 4017, dest = 127001
+src = 4017, dest = 192885
+src = 4017, dest = 156598
+src = 4017, dest = 90983
+
+-------------------------
+src = 5906, dest = 186836
+src = 5906, dest = 123664
+src = 5906, dest = 56803
+src = 5906, dest = 78928
+src = 5906, dest = 50299
+src = 5906, dest = 171792
+src = 5906, dest = 124550
+src = 5906, dest = 149375
+src = 5906, dest = 113088
+src = 5906, dest = 184831
+
+-------------------------
+src = 68, dest = 266199
+src = 68, dest = 134456
+src = 68, dest = 164859
+src = 68, dest = 231567
+src = 68, dest = 117241
+src = 68, dest = 112605
+src = 68, dest = 203360
+src = 68, dest = 258203
+src = 68, dest = 221916
+src = 68, dest = 202991
+
+-------------------------
+src = 375, dest = 203955
+src = 375, dest = 92520
+src = 375, dest = 172819
+src = 375, dest = 257802
+src = 375, dest = 167508
+src = 375, dest = 5698
+src = 375, dest = 159742
+src = 375, dest = 225626
+src = 375, dest = 189339
+src = 375, dest = 123724
+
+-------------------------
+src = 7449, dest = 189566
+src = 7449, dest = 164041
+src = 7449, dest = 84122
+src = 7449, dest = 66001
+src = 7449, dest = 82585
+src = 7449, dest = 213277
+src = 7449, dest = 131773
+src = 7449, dest = 152105
+src = 7449, dest = 115818
+src = 7449, dest = 208342
+
+-------------------------
+src = 2945, dest = 146100
+src = 2945, dest = 54050
+src = 2945, dest = 145923
+src = 2945, dest = 222562
+src = 2945, dest = 172311
+src = 2945, dest = 72073
+src = 2945, dest = 101887
+src = 2945, dest = 168860
+src = 2945, dest = 133604
+src = 2945, dest = 60407
+
+-------------------------
