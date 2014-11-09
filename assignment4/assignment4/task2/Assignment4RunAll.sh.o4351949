@@ -1,0 +1,1 @@
+/var/spool/torque/mom_priv/jobs/4351949.rocks.omega.hpc.yale.internal.SC: line 8: 11601 Segmentation fault      ./task2 ../inputs/Square-n/Square-n.15.0.gr ../inputs/Square-n/Square-n.15.0.ss > results/square_15.out

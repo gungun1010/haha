@@ -27,22 +27,20 @@ int get_queue(int **vqRef, int *qSize){
     return ret;
 }
 
-void mooresLaw(int N, int source, GNodePtr **adj_listheadRef){
+void mooresLaw(int N, int source, GNodePtr **adj_listheadRef, int **dist){
     int i;
-    int *dist;//distance array
     int *vertexQ;//vertex array
     int vi,vj,newdist_vj;
     int qSize = INIT_Q_SIZE;
     GNodePtr vj_p;
     
-    dist = (int *)malloc((N+1)*sizeof(int));
     vertexQ = (int *) malloc(qSize * sizeof(int));
 
     //initialize
     for(i=0;i<=N;i++)
-        dist[i] = INF;
+        (*dist)[i] = INF;
 
-    dist[source] = 0;
+    (*dist)[source] = 0;
     put_queue(&vertexQ, source, &qSize);
 
     // Loop over entries in queue
@@ -52,24 +50,14 @@ void mooresLaw(int N, int source, GNodePtr **adj_listheadRef){
 
         while(vj_p){
             vj = vj_p->vertex; //get vertex number
-            newdist_vj = dist[vi] + vj_p->weight; //distance thru vi
+            newdist_vj = (*dist)[vi] + vj_p->weight; //distance thru vi
 
-            if ((newdist_vj < dist[vj]) || (dist[vj]==INF)) {
-                dist[vj] = newdist_vj; // Update best distance to vj
+            if ((newdist_vj < (*dist)[vj]) || ((*dist)[vj]==INF)) {
+                (*dist)[vj] = newdist_vj; // Update best distance to vj
                 put_queue(&vertexQ, vj, &qSize); // add vj to q
             }
             vj_p = vj_p->next;
         }
     }
 
-    printf("src = %d, dest = %d\n",source, dist[1]);
-    printf("src = %d, dest = %d\n",source, dist[1001]);
-    printf("src = %d, dest = %d\n",source, dist[2001]);
-    printf("src = %d, dest = %d\n",source, dist[3001]);
-    printf("src = %d, dest = %d\n",source, dist[4001]);
-    printf("src = %d, dest = %d\n",source, dist[5001]);
-    printf("src = %d, dest = %d\n",source, dist[6001]);
-    printf("src = %d, dest = %d\n",source, dist[7001]);
-    printf("src = %d, dest = %d\n",source, dist[8001]);
-    printf("src = %d, dest = %d\n",source, dist[N]);
 }

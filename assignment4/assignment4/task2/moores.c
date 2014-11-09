@@ -2,10 +2,15 @@
 
 
 void put_queue(int **vqRef, int vertex, int *qSize){
+    int temp;//create a var on each thread's stack
+
     (*qSize)++;
 
     *vqRef = (int *)realloc((*vqRef), (*qSize) * sizeof(int));
-    (*vqRef)[(*qSize)-1] = vertex;
+    
+    temp = (*qSize)-1;
+
+    (*vqRef)[temp] = vertex;
 }
 
 int get_queue(int **vqRef, int *qSize){
@@ -27,49 +32,74 @@ int get_queue(int **vqRef, int *qSize){
     return ret;
 }
 
-void mooresLaw(int N, int source, GNodePtr **adj_listheadRef){
+void mooresLaw(int N, int source, GNodePtr **adj_listheadRef, int **dist){
     int i;
-    int *dist;//distance array
     int *vertexQ;//vertex array
     int vi,vj,newdist_vj;
     int qSize = INIT_Q_SIZE;
+    int nullCtr;
     GNodePtr vj_p;
     
-    dist = (int *)malloc((N+1)*sizeof(int));
     vertexQ = (int *) malloc(qSize * sizeof(int));
 
     //initialize
-    for(i=0;i<=N;i++)
-        dist[i] = INF;
-
-    dist[source] = 0;
-    put_queue(&vertexQ, source, &qSize);
-
-    // Loop over entries in queue
-    while((vi = get_queue(&vertexQ, &qSize)) > 0){//get head of queue
-
-        vj_p = (*adj_listheadRef)[vi];
-
-        while(vj_p){
-            vj = vj_p->vertex; //get vertex number
-            newdist_vj = dist[vi] + vj_p->weight; //distance thru vi
-
-            if ((newdist_vj < dist[vj]) || (dist[vj]==INF)) {
-                dist[vj] = newdist_vj; // Update best distance to vj
-                put_queue(&vertexQ, vj, &qSize); // add vj to q
-            }
-            vj_p = vj_p->next;
-        }
+    #pragma omp parallel shared(nullCtr, dist, vertexQ, qSize, N, source, adj_listheadRef) private(i,vi,newdist_vj, vj_p, vj)
+    {
+    #pragma omp for
+    for(i=0;i<=N;i++){
+         (*dist)[i] = INF;
     }
 
-    printf("src = %d, dest = %d\n",source, dist[1]);
-    printf("src = %d, dest = %d\n",source, dist[1001]);
-    printf("src = %d, dest = %d\n",source, dist[2001]);
-    printf("src = %d, dest = %d\n",source, dist[3001]);
-    printf("src = %d, dest = %d\n",source, dist[4001]);
-    printf("src = %d, dest = %d\n",source, dist[5001]);
-    printf("src = %d, dest = %d\n",source, dist[6001]);
-    printf("src = %d, dest = %d\n",source, dist[7001]);
-    printf("src = %d, dest = %d\n",source, dist[8001]);
-    printf("src = %d, dest = %d\n",source, dist[N]);
+    #pragma omp single    
+    {
+        (*dist)[source] = 0;
+        nullCtr = 0;
+        put_queue(&vertexQ, source, &qSize);
+    }
+    #pragma omp barrier
+    
+    // Loop over entries in queue
+    while(nullCtr < omp_get_num_threads()){
+        
+        #pragma omp single    
+        {
+        nullCtr=0;
+        }
+        #pragma omp barrier
+
+        #pragma omp critical (two)
+        {
+        vi = get_queue(&vertexQ, &qSize);//get head of queue
+        }
+        #pragma omp barrier
+        
+        if(vi > 0){ 
+            //fetch all vj_p at once
+            for(vj_p = (*adj_listheadRef)[vi]; vj_p; vj_p = vj_p->next){
+                vj = vj_p->vertex; //get vertex number
+
+                //read from shared variable, but different location,  thread safe
+                //write to private variable, thread safe
+                //FIXME (*dist)[vi] & (*dist)[vj) causes trouble
+                newdist_vj = (*dist)[vi] + vj_p->weight; //distance thru vi
+                
+                //we need mutual exclusion here, each thread has a different vj
+                if ((newdist_vj < (*dist)[vj]) || ((*dist)[vj]==INF)) {
+                    (*dist)[vj] = newdist_vj; // Update best distance to vj
+
+                    #pragma omp critical (one)
+                    {
+                    put_queue(&vertexQ, vj, &qSize); // add vj to q
+                    }
+                }
+            }
+        }else{
+            #pragma omp atomic
+            nullCtr++;
+        }
+        #pragma omp barrier
+    }//while(1)
+    #pragma omp barrier
+    }//parallel 
+
 }

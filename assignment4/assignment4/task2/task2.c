@@ -1,6 +1,7 @@
 //          #include <math.h>
 #include "moores.h"
 
+
 void add_gnode(int vi, int vj, int weight, GNodePtr *adj_listhead) {
   GNodePtr gnodep = (GNodePtr) malloc(sizeof(GNode));
   gnodep->vertex = vj;
@@ -23,6 +24,7 @@ int main(int argc, char *argv[]) {
 
   
   int N, M; // N=# of vertices; M=# of edges
+  double et0,et1, etime0, etime1, cptime;
   int foundp = FALSE; // To indicate that a "p" card has been found
   int args_assigned = 0; // Counts number of args assigned from sscanf calls
   int nsources; // nsources = # of source vertices to use for this graph
@@ -33,6 +35,7 @@ int main(int argc, char *argv[]) {
   int *sources;
   int totaledges = 0; // Count of graph edges
   GNodePtr *adj_listhead; // Use your own pointer type, depending on the structures you are using.
+  int *dist; //distance array
 
   // -------------------------------- Read in Graph File -------------------------------------------
 
@@ -114,8 +117,31 @@ int main(int argc, char *argv[]) {
   }
   
   //-------------------------------- My own code starts here--------------------------
+  omp_set_num_threads(NUM_THREADS); //setting number of threads
+
+  timing(&etime0,&cptime);
   for(i=0; i<nsources; i++){ 
-      mooresLaw(N, sources[i], &adj_listhead);
-      printf("\n-------------------------\n");
+      dist = (int *)malloc((N+1) * sizeof(int));
+
+      //mooresLaw, starts 
+      timing(&et0,&cptime);
+      mooresLaw(N, sources[i], &adj_listhead, &dist);
+      timing(&et1,&cptime);
+
+      printf("\nsource: %d\n",sources[i]);
+      
+      for(j=1; j<N+1; j=j+1000){
+          printf("%d, %d\n",j, dist[j]);
+          if(j >= 10001){
+              break;
+          }
+      }
+
+      printf("%d, %d\n",N, dist[N]);
+
+      printf("this source run time %.5f seconds\n",(et1-et0));
+      printf("------------------------------------\n");
   }
+  timing(&etime1,&cptime);
+  printf("total run time: %.5f seconds\n",(etime1-etime0));
 }
