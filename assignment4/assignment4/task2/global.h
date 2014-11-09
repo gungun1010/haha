@@ -2,7 +2,7 @@
 #define TRUE 1
 #define INF -1
 #define INIT_Q_SIZE 0
-#define NUM_THREADS 4
+#define NUM_THREADS 8
 
 typedef struct gnode{
   int vertex;
