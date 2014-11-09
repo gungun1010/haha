@@ -10,4 +10,4 @@ task2:	task2.o moores.o ~ahs3/cpsc424/utils/timing/timing.o
 	$(CC) -c $(CFLAGS) $<
 
 clean:
-	rm -f *.o task2
+	rm -f *.o task2 Assignment4RunAll.sh.*

@@ -130,6 +130,9 @@ int main(int argc, char *argv[]) {
       
       for(j=1; j<N+1; j=j+1000){
           printf("%d, %d\n",j, dist[j]);
+          if(j>=10001){
+              break;
+          }
       }
 
       printf("%d, %d\n",N, dist[N]);
