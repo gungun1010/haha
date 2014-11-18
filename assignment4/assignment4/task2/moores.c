@@ -67,11 +67,10 @@ void mooresLaw(int N, int source, GNodePtr **adj_listheadRef, int **dist){
         }
         #pragma omp barrier
 
-        #pragma omp critical (two)
+        #pragma omp critical
         {
         vi = get_queue(&vertexQ, &qSize);//get head of queue
         }
-        #pragma omp barrier
         
         if(vi > 0){ 
             //fetch all vj_p at once
@@ -83,23 +82,24 @@ void mooresLaw(int N, int source, GNodePtr **adj_listheadRef, int **dist){
                 //FIXME (*dist)[vi] & (*dist)[vj) causes trouble
                 newdist_vj = (*dist)[vi] + vj_p->weight; //distance thru vi
                 
-                #pragma omp critical (one)
-                {
                 //we need mutual exclusion here, each thread has a different vj
                 if ((newdist_vj < (*dist)[vj]) || ((*dist)[vj]==INF)) {
                     (*dist)[vj] = newdist_vj; // Update best distance to vj
 
+                    #pragma omp critical
+                    {
+
                     put_queue(&vertexQ, vj, &qSize); // add vj to q
-                }
+                    }
                 }
             }
         }else{
             #pragma omp atomic
             nullCtr++;
         }
-        #pragma omp barrier
+        //#pragma omp barrier
     }//while(1)
-    #pragma omp barrier
+    //#pragma omp barrier
     }//parallel 
 
 }

@@ -26,7 +26,7 @@ source: 118889
 9001, 11420148
 10001, 8708183
 131044, 11852056
-this source run time 13.28771 seconds
+this source run time 15.23075 seconds
 ------------------------------------
 
 source: 16645
@@ -42,7 +42,7 @@ source: 16645
 9001, 9970485
 10001, 7334813
 131044, 6843846
-this source run time 16.91420 seconds
+this source run time 18.84308 seconds
 ------------------------------------
 
 source: 116782
@@ -58,7 +58,7 @@ source: 116782
 9001, 13364368
 10001, 10537389
 131044, 11641050
-this source run time 15.52520 seconds
+this source run time 18.60089 seconds
 ------------------------------------
 
 source: 13866
@@ -74,7 +74,7 @@ source: 13866
 9001, 6534122
 10001, 8204069
 131044, 11909038
-this source run time 18.95389 seconds
+this source run time 21.38099 seconds
 ------------------------------------
 
 source: 64263
@@ -90,7 +90,7 @@ source: 64263
 9001, 8059009
 10001, 9728956
 131044, 13433925
-this source run time 20.07671 seconds
+this source run time 22.38746 seconds
 ------------------------------------
 
 source: 94495
@@ -106,7 +106,7 @@ source: 94495
 9001, 7347294
 10001, 4520315
 131044, 7321222
-this source run time 10.56975 seconds
+this source run time 11.98067 seconds
 ------------------------------------
 
 source: 1076
@@ -122,7 +122,7 @@ source: 1076
 9001, 7469559
 10001, 9028906
 131044, 12844475
-this source run time 19.46664 seconds
+this source run time 21.74688 seconds
 ------------------------------------
 
 source: 5997
@@ -138,7 +138,7 @@ source: 5997
 9001, 9093356
 10001, 7829443
 131044, 12000754
-this source run time 12.49752 seconds
+this source run time 14.45945 seconds
 ------------------------------------
 
 source: 119179
@@ -154,7 +154,7 @@ source: 119179
 9001, 4186941
 10001, 4825883
 131044, 9243564
-this source run time 11.70945 seconds
+this source run time 13.50265 seconds
 ------------------------------------
 
 source: 47111
@@ -170,6 +170,6 @@ source: 47111
 9001, 2210659
 10001, 1018837
 131044, 5428121
-this source run time 10.39854 seconds
+this source run time 12.52669 seconds
 ------------------------------------
-total run time: 149.39989 seconds
+total run time: 170.65988 seconds
