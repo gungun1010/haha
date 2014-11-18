@@ -120,15 +120,15 @@ int main(int argc, char *argv[]) {
   omp_set_num_threads(NUM_THREADS); //setting number of threads
 
   timing(&etime0,&cptime);
-  for(i=0; i<nsources; i++){ 
+  //for(i=0; i<nsources; i++){ 
       dist = (int *)malloc((N+1) * sizeof(int));
 
       //mooresLaw, starts 
       timing(&et0,&cptime);
-      mooresLaw(N, sources[i], &adj_listhead, &dist);
+      mooresLaw(N, sources[0], &adj_listhead, &dist);
       timing(&et1,&cptime);
 
-      printf("\nsource: %d\n",sources[i]);
+      printf("\nsource: %d\n",sources[0]);
       
       for(j=1; j<N+1; j=j+1000){
           printf("%d, %d\n",j, dist[j]);
@@ -141,7 +141,7 @@ int main(int argc, char *argv[]) {
 
       printf("this source run time %.5f seconds\n",(et1-et0));
       printf("------------------------------------\n");
-  }
+  //}
   timing(&etime1,&cptime);
   printf("total run time: %.5f seconds\n",(etime1-etime0));
 }
