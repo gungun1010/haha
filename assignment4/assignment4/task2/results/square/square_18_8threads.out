@@ -26,7 +26,7 @@ source: 237829
 9001, 6285375
 10001, 12874289
 262144, 30158416
-this source run time 47.12722 seconds
+this source run time 44.67194 seconds
 ------------------------------------
 
 source: 33296
@@ -42,7 +42,7 @@ source: 33296
 9001, 23489941
 10001, 32115130
 262144, 9209915
-this source run time 69.60351 seconds
+this source run time 70.86623 seconds
 ------------------------------------
 
 source: 233614
@@ -58,7 +58,7 @@ source: 233614
 9001, 38452319
 10001, 29777561
 262144, 33052402
-this source run time 71.68050 seconds
+this source run time 72.71401 seconds
 ------------------------------------
 
 source: 27738
@@ -74,7 +74,7 @@ source: 27738
 9001, 35767638
 10001, 24540855
 262144, 34949355
-this source run time 61.71133 seconds
+this source run time 61.76148 seconds
 ------------------------------------
 
 source: 128554
@@ -90,7 +90,7 @@ source: 128554
 9001, 21803339
 10001, 34472852
 262144, 13101753
-this source run time 83.73828 seconds
+this source run time 88.46862 seconds
 ------------------------------------
 
 source: 189030
@@ -106,7 +106,7 @@ source: 189030
 9001, 18487427
 10001, 30375048
 262144, 13798521
-this source run time 65.15470 seconds
+this source run time 69.64281 seconds
 ------------------------------------
 
 source: 2153
@@ -122,7 +122,7 @@ source: 2153
 9001, 14302672
 10001, 14907043
 262144, 24695930
-this source run time 36.25484 seconds
+this source run time 38.46684 seconds
 ------------------------------------
 
 source: 11997
@@ -138,7 +138,7 @@ source: 11997
 9001, 9538107
 10001, 14630407
 262144, 26306097
-this source run time 35.69707 seconds
+this source run time 37.72020 seconds
 ------------------------------------
 
 source: 238409
@@ -154,7 +154,7 @@ source: 238409
 9001, 27766491
 10001, 12659101
 262144, 51148137
-this source run time 71.31138 seconds
+this source run time 77.14691 seconds
 ------------------------------------
 
 source: 94242
@@ -170,6 +170,6 @@ source: 94242
 9001, 29521424
 10001, 30255016
 262144, 15319840
-this source run time 59.27512 seconds
+this source run time 63.16787 seconds
 ------------------------------------
-total run time: 601.55432 seconds
+total run time: 624.62728 seconds
