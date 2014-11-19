@@ -13,7 +13,7 @@ sources[7] = 1500
 sources[8] = 29795
 sources[9] = 11778
 
-source: 29723
+source: 1792
 1, 516173
 1001, 1068285
 2001, 326357
@@ -26,10 +26,10 @@ source: 29723
 9001, 1559803
 10001, 1717756
 32761, 1749711
-this source run time 0.71243 seconds
+this source run time 0.11993 seconds
 ------------------------------------
 
-source: 4162
+source: 1792
 1, 1603044
 1001, 1960034
 2001, 1667338
@@ -42,10 +42,10 @@ source: 4162
 9001, 650126
 10001, 927262
 32761, 1256687
-this source run time 1.12711 seconds
+this source run time 0.20096 seconds
 ------------------------------------
 
-source: 29196
+source: 1792
 1, 678393
 1001, 1273791
 2001, 704141
@@ -58,10 +58,10 @@ source: 29196
 9001, 1296627
 10001, 1477252
 32761, 1640663
-this source run time 0.73295 seconds
+this source run time 0.13241 seconds
 ------------------------------------
 
-source: 3467
+source: 1792
 1, 2461401
 1001, 1952272
 2001, 2251273
@@ -74,10 +74,10 @@ source: 3467
 9001, 640333
 10001, 414738
 32761, 372146
-this source run time 1.08645 seconds
+this source run time 0.18082 seconds
 ------------------------------------
 
-source: 16066
+source: 1792
 1, 1480746
 1001, 1124300
 2001, 1264661
@@ -90,10 +90,10 @@ source: 16066
 9001, 602042
 10001, 642893
 32761, 762719
-this source run time 0.68488 seconds
+this source run time 0.11519 seconds
 ------------------------------------
 
-source: 23624
+source: 1792
 1, 789789
 1001, 815301
 2001, 172259
@@ -106,10 +106,10 @@ source: 23624
 9001, 1869714
 10001, 1935886
 32761, 1967841
-this source run time 0.97648 seconds
+this source run time 0.17729 seconds
 ------------------------------------
 
-source: 269
+source: 1792
 1, 719949
 1001, 1279616
 2001, 745697
@@ -122,10 +122,10 @@ source: 269
 9001, 1265823
 10001, 1453133
 32761, 1623563
-this source run time 0.69531 seconds
+this source run time 0.11793 seconds
 ------------------------------------
 
-source: 1500
+source: 1792
 1, 1397732
 1001, 1899231
 2001, 1534569
@@ -138,10 +138,10 @@ source: 1500
 9001, 880585
 10001, 1145858
 32761, 1475283
-this source run time 0.85738 seconds
+this source run time 0.15544 seconds
 ------------------------------------
 
-source: 29795
+source: 1792
 1, 1672761
 1001, 2029751
 2001, 1737055
@@ -154,10 +154,10 @@ source: 29795
 9001, 713520
 10001, 990656
 32761, 1320081
-this source run time 1.18456 seconds
+this source run time 0.20664 seconds
 ------------------------------------
 
-source: 11778
+source: 1792
 1, 1318208
 1001, 1136610
 2001, 1102123
@@ -170,6 +170,6 @@ source: 11778
 9001, 737469
 10001, 831434
 32761, 968948
-this source run time 0.55288 seconds
+this source run time 0.09631 seconds
 ------------------------------------
-total run time: 8.61070 seconds
+total run time: 1.50304 seconds

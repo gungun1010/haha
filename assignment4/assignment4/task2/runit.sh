@@ -1,9 +1,0 @@
-#!/bin/bash
-
-module load Langs/Intel/14
-
-module list
-
-#./task1 inputs/Square-n/Square-n.13.0.gr inputs/Square-n/Square-n.13.0.ss > read_Square_13.out
-#./task2 /home/fas/hpcprog/ahs3/cpsc424/assignment4/inputs/Random4-n/Random4-n.13.0.gr /home/fas/hpcprog/ahs3/cpsc424/assignment4/inputs/Random4-n/Random4-n.13.0.ss
-./task2 /home/fas/hpcprog/ahs3/cpsc424/assignment4/inputs/Square-n/Square-n.17.0.gr /home/fas/hpcprog/ahs3/cpsc424/assignment4/inputs/Square-n/Square-n.17.0.ss
