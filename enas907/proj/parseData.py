@@ -15,6 +15,12 @@ import matplotlib.pyplot as plt
 import subprocess
 from subprocess import call
 import commands
+import time 
+import xxhash
+import struct
+
+NUM_COLS = 40
+NUM_ITR = 1
 
 class NestedDict(dict):
     def __getitem__(self, key):
@@ -35,11 +41,6 @@ def sklearnSGD():
     # Split into train and test
     trainData, testData, trainLabel, testLabel = sklearn.cross_validation.train_test_split(trainData, trainLabel)
 
-    print trainData.shape
-    print testData.shape
-    print trainLabel.shape
-    print testLabel.shape
-    sys.exit()
     # Visualize sample of the data
     #ind = np.random.permutation(trainData.shape[0])[:1000]
     #df = pd.DataFrame(trainData[ind])
@@ -56,25 +57,68 @@ def sklearnSGD():
 def parseProcess():
     global trainData, trainLabel, testData, testLabel
     
+    trainData = np.array([])
+    trainLabel = np.array([])
+    testData = np.array([])
+    testLabel = np.array([])
+
     #entry[0] = ['USER', 'PID', '%CPU', '%MEM', 'VSZ', 'RSS', 'TTY', 'STAT', 'START', 'TIME', 'COMMAND']
     #USER(0), %CPU(2), %MEM(3), VSZ(4), RSS(5), TIME(9), CMD(10) are important attribute
-    shDump = commands.getoutput("ps aux --sort=-pcpu") # list of all processes in stream
-    #print shDump 
-    entry = shDump.split('\n') #split the stream into arraies
-    print len(entry)
-    vals = entry[1].split() #split array into elements
+    init = 1
+    iteration = 0
+    procInfoAscii = []
 
-    #if there is total number of parameters is less than 5, fill in with blanks
-    while len(vals) <= 15:
-        vals.append(' ')
+    while iteration < NUM_ITR: #100 iteration, about 2000 samples
+        shDump = commands.getoutput("ps aux --sort=-pcpu") # list of all processes in stream
+        entry = shDump.split('\n') #split the stream into arraies
+        #print len(entry)
 
-    vals.pop(1);
-    vals.pop(5);
-    vals.pop(6);
-    #vals = ['USER', '%CPU', '%MEM', 'VSZ', 'RSS','STAT','TIME', 'COMMAND','param0', 'param1', 'param2', 'param3', 'param4']
+        for indx in range(len(entry)):
+            if indx != 0:
+                procInfo = entry[indx].split() #split array into elements
 
-    trainData=np.array(vals);
-    print trainData
+                #if there is total number of parameters is less than 5, fill in with blanks
+                while len(procInfo) < NUM_COLS:
+                    procInfo.append(' ')
+                
+                #remove meaningless contents
+                procInfo.pop(1);
+                procInfo.pop(5);
+                procInfo.pop(6);
+                #procInfo = ['USER', '%CPU', '%MEM', 'VSZ', 'RSS','STAT','TIME', 'COMMAND','param0', 'param1', 'param2', 'param3', 'param4', .... 'paramN']
+                #print procInfo
+                #hash in xxhash (non-cryto hashing) then convert to double
+                procInfoHash = [ struct.unpack('d', xxhash.xxh64(s).hexdigest().decode('hex'))[0] for s in procInfo]
+                print procInfo
+                print procInfoHash
+
+                if indx == 1 and init == 1:
+                    init=0 #only init numpy once
+                    
+                    #procInfo[7] is the command, i use it as label
+                    trainData=np.hstack((trainData, np.float_(procInfoHash)));
+                    trainLabel=np.hstack((trainLabel, np.float_(procInfoHash[7])));
+
+                    testData=np.hstack((testData, np.float_(procInfoHash)));
+                    testLabel=np.hstack((testLabel, np.float_(procInfoHash[7])));
+                else:
+                    trainData=np.vstack((trainData, np.float_(procInfoHash)));
+                    trainLabel=np.vstack((trainLabel, np.float_(procInfoHash[7])));
+                    
+                    if iteration < 20:
+                        testData=np.vstack((testData, np.float_(procInfoHash)));
+                        testLabel=np.vstack((testLabel, np.float_(procInfoHash[7])));
+                        
+
+        iteration += 1
+    
+    print trainLabel.shape
+    print trainData.shape
+    print trainLabel.dtype
+    print trainData.dtype
+
+    print testLabel.shape
+    print testData.shape
 
 def genH5():
     global dirname, train_filename, test_filename
@@ -92,7 +136,7 @@ def genH5():
     # To show this off, we'll list the same data file twice.
     with h5py.File(train_filename, 'w') as f:
         f['data'] = trainData
-        f['label'] = trainLabel.astype(np.float32)
+        f['label'] = trainLabel
     with open(os.path.join(dirname, 'train.txt'), 'w') as f:
         f.write(train_filename + '\n')
         f.write(train_filename + '\n')
@@ -104,7 +148,7 @@ def zipH5():
     comp_kwargs = {'compression': 'gzip', 'compression_opts': 1}
     with h5py.File(test_filename, 'w') as f:
         f.create_dataset('data', data=testData, **comp_kwargs)
-        f.create_dataset('label', data=testLabel.astype(np.float32), **comp_kwargs)
+        f.create_dataset('label', data=testLabel, **comp_kwargs)
     with open(os.path.join(dirname, 'test.txt'), 'w') as f:
         f.write(test_filename + '\n')
 
@@ -116,12 +160,13 @@ def main():
     
     parseProcess()
     sys.exit()
-    sklearnSGD()
+    #sklearnSGD()
 
     genH5()
 
     zipH5()
-
+    
+    #FIXME try train tomorrow
     trainDNN()
 
     print "end of program\n"
