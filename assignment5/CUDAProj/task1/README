@@ -1,0 +1,62 @@
+This directory contains a sample matrix multiplication code in Task1GPUsp.cu.
+
+Two GPU-equipped nodes have been reserved for class use. These are: 
+
+compute-45-3 and compute-45-4
+
+Each node contains 3 GPUs: one M2090 GPU (Device 0), and two M2070 GPUs (Devices 1 and 2).
+In addition, each contains 16 cores and 128 GB of CPU memory.
+
+To access one of the GPU nodes interactively, you must submit a job as follows:
+
+qsub -I -X -l nodes=1:ppn=16,mem=120gb,walltime=1:00:00 -q cpsc424gpu
+
+("-X" is optional, and you may wish to modify the walltime limit.)
+
+ONLY 1 USER CAN RUN ON EACH NODE AT ONE TIME. 
+
+PLEASE BE CONSIDERATE OF YOUR CLASSMATES---NO HOGGING!!
+
+As soon as your session starts, you will need to run the following module command:
+
+module load Langs/Intel/14 Langs/Cuda/6.0
+
+This will set your PATH and LD_LIBRARY_PATH environment variables to find Cuda tools and libraries.
+
+After loading the module file, try running "deviceQuery" and "bandwidthTest" to learn more about
+the GPUs installed on the node. NOTE: Neither these commands, nor the Makefile will work on non-GPU nodes.
+
+To build the sample code, run
+
+                      make Task1GPUsp
+
+This make command uses the makefile Makefile, which invokes the nvcc compiler 
+to build the code. 
+
+Once the code is built, you can execute it using:
+
+                      ./Task1GPUsp <n> <B> <G>
+
+where 
+
+     <n> is the number of rows and columns in the (square) matrices
+
+     <B> is the number of thread rows and columns in a thread block. 
+
+     <G> is the number of block rows and columns in the grid.
+
+So this means that  
+
+     blockDim.x = blockDim.y = <B>
+     blockDim.z = 1
+
+and
+
+     gridDim.x = gridDim.y = <G>
+     gridDim.z = 1
+
+For the sample code, you need to have at least <n> threads in the x and y directions 
+since each thread computes just one entry of the output matrix. The sample code
+checks to make sure that it has a sufficient number of threads
+in the x and y directions to carry out the computation. You may need to modify
+that check for later parts of the assignment.
