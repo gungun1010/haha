@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-__global__ void gpu_matrixmult(float *a, float *b, float *c, int n, int m, int p) {
+__global__ void gpu_matrixmult(double *a, double *b, double *c, int n, int m, int p) {
 
   int col = threadIdx.x + blockDim.x * blockIdx.x;
   int row = threadIdx.y + blockDim.y * blockIdx.y;
@@ -20,10 +20,10 @@ __global__ void gpu_matrixmult(float *a, float *b, float *c, int n, int m, int p
 }
 
 
-void cpu_matrixmult(float *a,float *b, float *c, int n) {
+void cpu_matrixmult(double *a,double *b, double *c, int n) {
 
   int index, indexa, indexb;
-  float cvalue;
+  double cvalue;
   for(int col=0;col < n; col++)
     for(int row=0;row < n; row++) {
       indexb = col;
@@ -47,8 +47,8 @@ int main(int argc, char *argv[]) {
   int Block_Dim_y = 1; //Block dimension, y
 
   int n,m,p; // matrix dimension
-  float *a,*b,*c;
-  float *dev_a, *dev_b, *dev_c;
+  double *a,*b,*c;
+  double *dev_a, *dev_b, *dev_c;
   int size_a, size_b, size_c; // number of bytes in arrays
 
   cudaEvent_t start, stop; // using cuda events to measure time
@@ -100,21 +100,21 @@ int main(int argc, char *argv[]) {
   dim3 Grid(Grid_Dim_y, Grid_Dim_x); //Grid structure
   dim3 Block(Block_Dim_y, Block_Dim_x); //Block structure
 
-  size_a = n * p * sizeof(float); // number of bytes in total in arrays
-  size_b = p * m * sizeof(float); // number of bytes in total in arrays
-  size_c = n * m * sizeof(float); // number of bytes in total in arrays
+  size_a = n * p * sizeof(double); // number of bytes in total in arrays
+  size_b = p * m * sizeof(double); // number of bytes in total in arrays
+  size_c = n * m * sizeof(double); // number of bytes in total in arrays
 
-  a = (float*) malloc(size_a); // dynamically allocated memory for arrays on host
-  b = (float*) malloc(size_b);
-  c = (float*) malloc(size_c); // results from GPU
+  a = (double*) malloc(size_a); // dynamically allocated memory for arrays on host
+  b = (double*) malloc(size_b);
+  c = (double*) malloc(size_c); // results from GPU
 
   srand(12345);
   //int p = n; //Used here only to illustrate proper initialization for non-square case
   printf ("a\n");
   for(i=0;i < n;i++){
     for(j=0;j < p;j++) {
-      // a[i * n + j] = (float) rand() / (float) RAND_MAX;
-      a[i * p + j] = (float) (i+j);
+      // a[i * n + j] = (double) rand() / (double) RAND_MAX;
+      a[i * p + j] = (double) (i+j);
       printf("%.2f  ", a[i * p + j]);
     }
     printf("\n");
@@ -123,8 +123,8 @@ int main(int argc, char *argv[]) {
   printf("b\n");
   for(i=0;i < p;i++){
     for(j=0;j < m;j++) {
-      //b[i * n + j] = (float) rand() / (float) RAND_MAX;
-      b[i * m + j] = (float) (i+j);
+      //b[i * n + j] = (double) rand() / (double) RAND_MAX;
+      b[i * m + j] = (double) (i+j);
       printf("%.2f  ", b[i * m + j]);
     }
     printf("\n");

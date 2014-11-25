@@ -4,19 +4,38 @@
 #include <math.h>
 
 __global__ void gpu_matrixmult(float *a, float *b, float *c, int n, int m, int p) {
-
-  int col = threadIdx.x + blockDim.x * blockIdx.x;
-  int row = threadIdx.y + blockDim.y * blockIdx.y;
-
-  int indexb = col;
-  int index = row * m + col;
-
-  if(col < m && row < n) {
-    c[index] = 0.;
-    for (int indexa = row*p; indexa < (row*p + p); indexa++, indexb+=m){ 
-      c[index] += a[indexa]*b[indexb];
-    }
+  
+  __shared__ float aTile[TW][TW], bTile[TW][TW];
+  int tx = threadIdx.x; 
+  int ty = threadIdx.y; 
+  int cvalue = 0; 
+  int col = tx + blockDim.x * blockIdx.x;
+  int row = ty + blockDim.y * blockIdx.y;
+  int aEdge, bEdge;
+  int tileIdx=0;
+  
+  if((p%TW) == 0){
+      aEdge = p/TW;
+  }else{
+      aEdge = p/TW+1; //if not divisible, we need one extra tile 
   }
+
+  while(tileIdx < aEdge){
+     
+
+      tileIdx++;
+  }
+  // Loop over tiles
+  for (int tileIdx=0; tileIdx<n/TW; tileIdx++) {
+    aTile[ty][tx] = a[row*p + tileIdx*TW + tx]; //Copy to shared memory 
+    bTile[ty][tx] = b[(tileIdx*TW*+ty)*m + col]; //Copy to shared memory 
+    
+    __syncthreads();
+    for (int k=0; k<TW; k++) cvalue += atile[ty][k] * btile[k][tx];
+     __syncthreads();
+  }
+
+  c[row*n + col] = cvalue;
 }
 
 
