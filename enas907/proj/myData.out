@@ -1,0 +1,301 @@
+Script started on Wed 26 Nov 2014 09:25:48 PM EST
+leon@leon-OptiPlex-3020: ./parseData.py
+(1970, 1)
+(1970, 37)
+float64
+float64
+(1970, 1)
+(1970, 37)
+I1126 21:26:00.011809 19886 caffe.cpp:99] Use GPU with device ID 0
+I1126 21:26:00.141053 19886 caffe.cpp:107] Starting Optimization
+I1126 21:26:00.141160 19886 solver.cpp:32] Initializing solver from parameters: 
+test_iter: 1000
+test_interval: 1000
+base_lr: 0.01
+display: 1000
+max_iter: 10000
+lr_policy: "step"
+gamma: 0.1
+momentum: 0.9
+weight_decay: 0.0005
+stepsize: 5000
+snapshot: 100
+snapshot_prefix: "/home/leon/enas907/proj/data/train"
+solver_mode: GPU
+net: "/home/leon/enas907/proj/train_val.prototxt"
+I1126 21:26:00.141244 19886 solver.cpp:67] Creating training net from net file: /home/leon/enas907/proj/train_val.prototxt
+I1126 21:26:00.141441 19886 net.cpp:275] The NetState phase (0) differed from the phase (1) specified by a rule in layer data
+I1126 21:26:00.141456 19886 net.cpp:275] The NetState phase (0) differed from the phase (1) specified by a rule in layer accuracy
+I1126 21:26:00.141522 19886 net.cpp:39] Initializing net from parameters: 
+name: "Process Monitor"
+layers {
+  top: "data"
+  top: "label"
+  name: "data"
+  type: HDF5_DATA
+  hdf5_data_param {
+    source: "/home/leon/enas907/proj/data/train.txt"
+    batch_size: 10
+  }
+  include {
+    phase: TRAIN
+  }
+}
+layers {
+  bottom: "data"
+  top: "fc1"
+  name: "fc1"
+  type: INNER_PRODUCT
+  blobs_lr: 1
+  blobs_lr: 2
+  weight_decay: 1
+  weight_decay: 0
+  inner_product_param {
+    num_output: 40
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+layers {
+  bottom: "fc1"
+  top: "fc1"
+  name: "relu1"
+  type: RELU
+}
+layers {
+  bottom: "fc1"
+  top: "fc2"
+  name: "fc2"
+  type: INNER_PRODUCT
+  blobs_lr: 1
+  blobs_lr: 2
+  weight_decay: 1
+  weight_decay: 0
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+layers {
+  bottom: "fc2"
+  bottom: "label"
+  top: "loss"
+  name: "loss"
+  type: SOFTMAX_LOSS
+}
+state {
+  phase: TRAIN
+}
+I1126 21:26:00.141860 19886 net.cpp:67] Creating Layer data
+I1126 21:26:00.141880 19886 net.cpp:356] data -> data
+I1126 21:26:00.141896 19886 net.cpp:356] data -> label
+I1126 21:26:00.141909 19886 net.cpp:96] Setting up data
+I1126 21:26:00.141917 19886 hdf5_data_layer.cpp:57] Loading filename from /home/leon/enas907/proj/data/train.txt
+I1126 21:26:00.141973 19886 hdf5_data_layer.cpp:69] Number of files: 2
+I1126 21:26:00.141983 19886 hdf5_data_layer.cpp:29] Loading HDF5 file/home/leon/enas907/proj/data/train.h5
+I1126 21:26:00.143246 19886 hdf5_data_layer.cpp:49] Successully loaded 1970 rows
+I1126 21:26:00.143261 19886 hdf5_data_layer.cpp:81] output data size: 10,37,1,1
+I1126 21:26:00.143273 19886 net.cpp:103] Top shape: 10 37 1 1 (370)
+I1126 21:26:00.143281 19886 net.cpp:103] Top shape: 10 1 1 1 (10)
+I1126 21:26:00.143290 19886 net.cpp:67] Creating Layer fc1
+I1126 21:26:00.143296 19886 net.cpp:394] fc1 <- data
+I1126 21:26:00.143307 19886 net.cpp:356] fc1 -> fc1
+I1126 21:26:00.143316 19886 net.cpp:96] Setting up fc1
+I1126 21:26:00.143756 19886 net.cpp:103] Top shape: 10 40 1 1 (400)
+I1126 21:26:00.143784 19886 net.cpp:67] Creating Layer relu1
+I1126 21:26:00.143790 19886 net.cpp:394] relu1 <- fc1
+I1126 21:26:00.143797 19886 net.cpp:345] relu1 -> fc1 (in-place)
+I1126 21:26:00.143805 19886 net.cpp:96] Setting up relu1
+I1126 21:26:00.153128 19886 net.cpp:103] Top shape: 10 40 1 1 (400)
+I1126 21:26:00.153167 19886 net.cpp:67] Creating Layer fc2
+I1126 21:26:00.153185 19886 net.cpp:394] fc2 <- fc1
+I1126 21:26:00.153194 19886 net.cpp:356] fc2 -> fc2
+I1126 21:26:00.153206 19886 net.cpp:96] Setting up fc2
+I1126 21:26:00.153223 19886 net.cpp:103] Top shape: 10 2 1 1 (20)
+I1126 21:26:00.153237 19886 net.cpp:67] Creating Layer loss
+I1126 21:26:00.153244 19886 net.cpp:394] loss <- fc2
+I1126 21:26:00.153249 19886 net.cpp:394] loss <- label
+I1126 21:26:00.153257 19886 net.cpp:356] loss -> loss
+I1126 21:26:00.153264 19886 net.cpp:96] Setting up loss
+I1126 21:26:00.153285 19886 net.cpp:103] Top shape: 1 1 1 1 (1)
+I1126 21:26:00.153301 19886 net.cpp:109]     with loss weight 1
+I1126 21:26:00.153326 19886 net.cpp:170] loss needs backward computation.
+I1126 21:26:00.153343 19886 net.cpp:170] fc2 needs backward computation.
+I1126 21:26:00.153349 19886 net.cpp:170] relu1 needs backward computation.
+I1126 21:26:00.153354 19886 net.cpp:170] fc1 needs backward computation.
+I1126 21:26:00.153360 19886 net.cpp:172] data does not need backward computation.
+I1126 21:26:00.153365 19886 net.cpp:208] This network produces output loss
+I1126 21:26:00.153373 19886 net.cpp:467] Collecting Learning Rate and Weight Decay.
+I1126 21:26:00.153383 19886 net.cpp:219] Network initialization done.
+I1126 21:26:00.153388 19886 net.cpp:220] Memory required for data: 4804
+I1126 21:26:00.153594 19886 solver.cpp:151] Creating test net (#0) specified by net file: /home/leon/enas907/proj/train_val.prototxt
+I1126 21:26:00.153625 19886 net.cpp:275] The NetState phase (1) differed from the phase (0) specified by a rule in layer data
+I1126 21:26:00.153698 19886 net.cpp:39] Initializing net from parameters: 
+name: "Process Monitor"
+layers {
+  top: "data"
+  top: "label"
+  name: "data"
+  type: HDF5_DATA
+  hdf5_data_param {
+    source: "/home/leon/enas907/proj/data/test.txt"
+    batch_size: 10
+  }
+  include {
+    phase: TEST
+  }
+}
+layers {
+  bottom: "data"
+  top: "fc1"
+  name: "fc1"
+  type: INNER_PRODUCT
+  blobs_lr: 1
+  blobs_lr: 2
+  weight_decay: 1
+  weight_decay: 0
+  inner_product_param {
+    num_output: 40
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+layers {
+  bottom: "fc1"
+  top: "fc1"
+  name: "relu1"
+  type: RELU
+}
+layers {
+  bottom: "fc1"
+  top: "fc2"
+  name: "fc2"
+  type: INNER_PRODUCT
+  blobs_lr: 1
+  blobs_lr: 2
+  weight_decay: 1
+  weight_decay: 0
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+layers {
+  bottom: "fc2"
+  bottom: "label"
+  top: "loss"
+  name: "loss"
+  type: SOFTMAX_LOSS
+}
+layers {
+  bottom: "fc2"
+  bottom: "label"
+  top: "accuracy"
+  name: "accuracy"
+  type: ACCURACY
+  include {
+    phase: TEST
+  }
+}
+state {
+  phase: TEST
+}
+I1126 21:26:00.153949 19886 net.cpp:67] Creating Layer data
+I1126 21:26:00.153959 19886 net.cpp:356] data -> data
+I1126 21:26:00.153967 19886 net.cpp:356] data -> label
+I1126 21:26:00.153976 19886 net.cpp:96] Setting up data
+I1126 21:26:00.153982 19886 hdf5_data_layer.cpp:57] Loading filename from /home/leon/enas907/proj/data/test.txt
+I1126 21:26:00.154005 19886 hdf5_data_layer.cpp:69] Number of files: 1
+I1126 21:26:00.154012 19886 hdf5_data_layer.cpp:29] Loading HDF5 file/home/leon/enas907/proj/data/test.h5
+I1126 21:26:00.156155 19886 hdf5_data_layer.cpp:49] Successully loaded 1970 rows
+I1126 21:26:00.156172 19886 hdf5_data_layer.cpp:81] output data size: 10,37,1,1
+I1126 21:26:00.156179 19886 net.cpp:103] Top shape: 10 37 1 1 (370)
+I1126 21:26:00.156186 19886 net.cpp:103] Top shape: 10 1 1 1 (10)
+I1126 21:26:00.156195 19886 net.cpp:67] Creating Layer label_data_1_split
+I1126 21:26:00.156201 19886 net.cpp:394] label_data_1_split <- label
+I1126 21:26:00.156208 19886 net.cpp:356] label_data_1_split -> label_data_1_split_0
+I1126 21:26:00.156219 19886 net.cpp:356] label_data_1_split -> label_data_1_split_1
+I1126 21:26:00.156226 19886 net.cpp:96] Setting up label_data_1_split
+I1126 21:26:00.156234 19886 net.cpp:103] Top shape: 10 1 1 1 (10)
+I1126 21:26:00.156250 19886 net.cpp:103] Top shape: 10 1 1 1 (10)
+I1126 21:26:00.156257 19886 net.cpp:67] Creating Layer fc1
+I1126 21:26:00.156263 19886 net.cpp:394] fc1 <- data
+I1126 21:26:00.156270 19886 net.cpp:356] fc1 -> fc1
+I1126 21:26:00.156278 19886 net.cpp:96] Setting up fc1
+I1126 21:26:00.156327 19886 net.cpp:103] Top shape: 10 40 1 1 (400)
+I1126 21:26:00.156338 19886 net.cpp:67] Creating Layer relu1
+I1126 21:26:00.156344 19886 net.cpp:394] relu1 <- fc1
+I1126 21:26:00.156350 19886 net.cpp:345] relu1 -> fc1 (in-place)
+I1126 21:26:00.156368 19886 net.cpp:96] Setting up relu1
+I1126 21:26:00.156380 19886 net.cpp:103] Top shape: 10 40 1 1 (400)
+I1126 21:26:00.156396 19886 net.cpp:67] Creating Layer fc2
+I1126 21:26:00.156402 19886 net.cpp:394] fc2 <- fc1
+I1126 21:26:00.156419 19886 net.cpp:356] fc2 -> fc2
+I1126 21:26:00.156427 19886 net.cpp:96] Setting up fc2
+I1126 21:26:00.156437 19886 net.cpp:103] Top shape: 10 2 1 1 (20)
+I1126 21:26:00.156447 19886 net.cpp:67] Creating Layer fc2_fc2_0_split
+I1126 21:26:00.156453 19886 net.cpp:394] fc2_fc2_0_split <- fc2
+I1126 21:26:00.156460 19886 net.cpp:356] fc2_fc2_0_split -> fc2_fc2_0_split_0
+I1126 21:26:00.156467 19886 net.cpp:356] fc2_fc2_0_split -> fc2_fc2_0_split_1
+I1126 21:26:00.156474 19886 net.cpp:96] Setting up fc2_fc2_0_split
+I1126 21:26:00.156481 19886 net.cpp:103] Top shape: 10 2 1 1 (20)
+I1126 21:26:00.156486 19886 net.cpp:103] Top shape: 10 2 1 1 (20)
+I1126 21:26:00.156493 19886 net.cpp:67] Creating Layer loss
+I1126 21:26:00.156498 19886 net.cpp:394] loss <- fc2_fc2_0_split_0
+I1126 21:26:00.156505 19886 net.cpp:394] loss <- label_data_1_split_0
+I1126 21:26:00.156512 19886 net.cpp:356] loss -> loss
+I1126 21:26:00.156519 19886 net.cpp:96] Setting up loss
+I1126 21:26:00.156527 19886 net.cpp:103] Top shape: 1 1 1 1 (1)
+I1126 21:26:00.156533 19886 net.cpp:109]     with loss weight 1
+I1126 21:26:00.156544 19886 net.cpp:67] Creating Layer accuracy
+I1126 21:26:00.156550 19886 net.cpp:394] accuracy <- fc2_fc2_0_split_1
+I1126 21:26:00.156556 19886 net.cpp:394] accuracy <- label_data_1_split_1
+I1126 21:26:00.156563 19886 net.cpp:356] accuracy -> accuracy
+I1126 21:26:00.156570 19886 net.cpp:96] Setting up accuracy
+I1126 21:26:00.156579 19886 net.cpp:103] Top shape: 1 1 1 1 (1)
+I1126 21:26:00.156584 19886 net.cpp:172] accuracy does not need backward computation.
+I1126 21:26:00.156589 19886 net.cpp:170] loss needs backward computation.
+I1126 21:26:00.156595 19886 net.cpp:170] fc2_fc2_0_split needs backward computation.
+I1126 21:26:00.156600 19886 net.cpp:170] fc2 needs backward computation.
+I1126 21:26:00.156606 19886 net.cpp:170] relu1 needs backward computation.
+I1126 21:26:00.156611 19886 net.cpp:170] fc1 needs backward computation.
+I1126 21:26:00.156616 19886 net.cpp:172] label_data_1_split does not need backward computation.
+I1126 21:26:00.156622 19886 net.cpp:172] data does not need backward computation.
+I1126 21:26:00.156627 19886 net.cpp:208] This network produces output accuracy
+I1126 21:26:00.156633 19886 net.cpp:208] This network produces output loss
+I1126 21:26:00.156643 19886 net.cpp:467] Collecting Learning Rate and Weight Decay.
+I1126 21:26:00.156649 19886 net.cpp:219] Network initialization done.
+I1126 21:26:00.156656 19886 net.cpp:220] Memory required for data: 5048
+I1126 21:26:00.156678 19886 solver.cpp:41] Solver scaffolding done.
+I1126 21:26:00.156687 19886 solver.cpp:160] Solving Process Monitor
+I1126 21:26:00.156700 19886 solver.cpp:247] Iteration 0, Testing net (#0)
+leon@leon-OptiPlex-3020: exit
+exit
+
+Script done on Wed 26 Nov 2014 09:26:06 PM EST

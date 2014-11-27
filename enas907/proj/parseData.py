@@ -1,6 +1,5 @@
 #!/usr/bin/python
 
-#%matplotlib inline
 import os
 import h5py
 import sys
@@ -20,7 +19,7 @@ import xxhash
 import struct
 
 NUM_COLS = 40
-NUM_ITR = 1
+NUM_ITR = 100
 
 class NestedDict(dict):
     def __getitem__(self, key):
@@ -89,36 +88,29 @@ def parseProcess():
                 #print procInfo
                 #hash in xxhash (non-cryto hashing) then convert to double
                 procInfoHash = [ struct.unpack('d', xxhash.xxh64(s).hexdigest().decode('hex'))[0] for s in procInfo]
-                print procInfo
-                print procInfoHash
+                #print procInfo
+                #print procInfoHash
 
                 if indx == 1 and init == 1:
                     init=0 #only init numpy once
                     
-                    #procInfo[7] is the command, i use it as label
+                    #procInfo[7] is the command, use it as label
                     trainData=np.hstack((trainData, np.float_(procInfoHash)));
                     trainLabel=np.hstack((trainLabel, np.float_(procInfoHash[7])));
 
-                    testData=np.hstack((testData, np.float_(procInfoHash)));
-                    testLabel=np.hstack((testLabel, np.float_(procInfoHash[7])));
+                    #testData=np.hstack((testData, np.float_(procInfoHash)));
+                    #testLabel=np.hstack((testLabel, np.float_(procInfoHash[7])));
                 else:
                     trainData=np.vstack((trainData, np.float_(procInfoHash)));
                     trainLabel=np.vstack((trainLabel, np.float_(procInfoHash[7])));
                     
-                    if iteration < 20:
-                        testData=np.vstack((testData, np.float_(procInfoHash)));
-                        testLabel=np.vstack((testLabel, np.float_(procInfoHash[7])));
-                        
-
+                    #if iteration < 20:
+                     #   testData=np.vstack((testData, np.float_(procInfoHash)));
+                      #  testLabel=np.vstack((testLabel, np.float_(procInfoHash[7])));
         iteration += 1
     
-    print trainLabel.shape
-    print trainData.shape
-    print trainLabel.dtype
-    print trainData.dtype
-
-    print testLabel.shape
-    print testData.shape
+    # Split into train and test
+    trainData, testData, trainLabel, testLabel = sklearn.cross_validation.train_test_split(trainData, trainLabel)
 
 def genH5():
     global dirname, train_filename, test_filename
@@ -136,7 +128,7 @@ def genH5():
     # To show this off, we'll list the same data file twice.
     with h5py.File(train_filename, 'w') as f:
         f['data'] = trainData
-        f['label'] = trainLabel
+        f['label'] = trainLabel.astype(np.float32)
     with open(os.path.join(dirname, 'train.txt'), 'w') as f:
         f.write(train_filename + '\n')
         f.write(train_filename + '\n')
@@ -148,7 +140,7 @@ def zipH5():
     comp_kwargs = {'compression': 'gzip', 'compression_opts': 1}
     with h5py.File(test_filename, 'w') as f:
         f.create_dataset('data', data=testData, **comp_kwargs)
-        f.create_dataset('label', data=testLabel, **comp_kwargs)
+        f.create_dataset('label', data=testLabel.astype(np.float32), **comp_kwargs)
     with open(os.path.join(dirname, 'test.txt'), 'w') as f:
         f.write(test_filename + '\n')
 
@@ -159,8 +151,16 @@ def main():
     global trainData, trainLabel, testData, testLabel, dirname, train_filename, test_filename 
     
     parseProcess()
-    sys.exit()
+    #sys.exit()
     #sklearnSGD()
+
+    print trainLabel.shape
+    print trainData.shape
+    print trainLabel.dtype
+    print trainData.dtype
+
+    print testLabel.shape
+    print testData.shape
 
     genH5()
 
@@ -168,7 +168,5 @@ def main():
     
     #FIXME try train tomorrow
     trainDNN()
-
-    print "end of program\n"
 
 main()

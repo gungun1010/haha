@@ -1,4 +1,4 @@
-name: "LogisticRegressionNet"
+name: "Process Monitor"
 layers {
   name: "data"
   type: HDF5_DATA

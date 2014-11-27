@@ -1,0 +1,599 @@
+Script started on Wed 26 Nov 2014 09:27:09 PM EST
+leon@leon-OptiPlex-3020: ./parseData.py 
+Accuracy: 0.768
+(7500,)
+(7500, 4)
+int64
+float64
+(2500,)
+(2500, 4)
+I1126 21:27:14.340275 19980 caffe.cpp:99] Use GPU with device ID 0
+I1126 21:27:14.469760 19980 caffe.cpp:107] Starting Optimization
+I1126 21:27:14.469868 19980 solver.cpp:32] Initializing solver from parameters: 
+test_iter: 1000
+test_interval: 1000
+base_lr: 0.01
+display: 1000
+max_iter: 10000
+lr_policy: "step"
+gamma: 0.1
+momentum: 0.9
+weight_decay: 0.0005
+stepsize: 5000
+snapshot: 100
+snapshot_prefix: "/home/leon/enas907/proj/data/train"
+solver_mode: GPU
+net: "/home/leon/enas907/proj/train_val.prototxt"
+I1126 21:27:14.469965 19980 solver.cpp:67] Creating training net from net file: /home/leon/enas907/proj/train_val.prototxt
+I1126 21:27:14.470170 19980 net.cpp:275] The NetState phase (0) differed from the phase (1) specified by a rule in layer data
+I1126 21:27:14.470185 19980 net.cpp:275] The NetState phase (0) differed from the phase (1) specified by a rule in layer accuracy
+I1126 21:27:14.470252 19980 net.cpp:39] Initializing net from parameters: 
+name: "Process Monitor"
+layers {
+  top: "data"
+  top: "label"
+  name: "data"
+  type: HDF5_DATA
+  hdf5_data_param {
+    source: "/home/leon/enas907/proj/data/train.txt"
+    batch_size: 10
+  }
+  include {
+    phase: TRAIN
+  }
+}
+layers {
+  bottom: "data"
+  top: "fc1"
+  name: "fc1"
+  type: INNER_PRODUCT
+  blobs_lr: 1
+  blobs_lr: 2
+  weight_decay: 1
+  weight_decay: 0
+  inner_product_param {
+    num_output: 40
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+layers {
+  bottom: "fc1"
+  top: "fc1"
+  name: "relu1"
+  type: RELU
+}
+layers {
+  bottom: "fc1"
+  top: "fc2"
+  name: "fc2"
+  type: INNER_PRODUCT
+  blobs_lr: 1
+  blobs_lr: 2
+  weight_decay: 1
+  weight_decay: 0
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+layers {
+  bottom: "fc2"
+  bottom: "label"
+  top: "loss"
+  name: "loss"
+  type: SOFTMAX_LOSS
+}
+state {
+  phase: TRAIN
+}
+I1126 21:27:14.470595 19980 net.cpp:67] Creating Layer data
+I1126 21:27:14.470607 19980 net.cpp:356] data -> data
+I1126 21:27:14.470641 19980 net.cpp:356] data -> label
+I1126 21:27:14.470655 19980 net.cpp:96] Setting up data
+I1126 21:27:14.470664 19980 hdf5_data_layer.cpp:57] Loading filename from /home/leon/enas907/proj/data/train.txt
+I1126 21:27:14.470764 19980 hdf5_data_layer.cpp:69] Number of files: 2
+I1126 21:27:14.470774 19980 hdf5_data_layer.cpp:29] Loading HDF5 file/home/leon/enas907/proj/data/train.h5
+I1126 21:27:14.471783 19980 hdf5_data_layer.cpp:49] Successully loaded 7500 rows
+I1126 21:27:14.471798 19980 hdf5_data_layer.cpp:81] output data size: 10,4,1,1
+I1126 21:27:14.471812 19980 net.cpp:103] Top shape: 10 4 1 1 (40)
+I1126 21:27:14.471819 19980 net.cpp:103] Top shape: 10 1 1 1 (10)
+I1126 21:27:14.471828 19980 net.cpp:67] Creating Layer fc1
+I1126 21:27:14.471834 19980 net.cpp:394] fc1 <- data
+I1126 21:27:14.471844 19980 net.cpp:356] fc1 -> fc1
+I1126 21:27:14.471854 19980 net.cpp:96] Setting up fc1
+I1126 21:27:14.472256 19980 net.cpp:103] Top shape: 10 40 1 1 (400)
+I1126 21:27:14.472287 19980 net.cpp:67] Creating Layer relu1
+I1126 21:27:14.472302 19980 net.cpp:394] relu1 <- fc1
+I1126 21:27:14.472308 19980 net.cpp:345] relu1 -> fc1 (in-place)
+I1126 21:27:14.472327 19980 net.cpp:96] Setting up relu1
+I1126 21:27:14.481534 19980 net.cpp:103] Top shape: 10 40 1 1 (400)
+I1126 21:27:14.481573 19980 net.cpp:67] Creating Layer fc2
+I1126 21:27:14.481580 19980 net.cpp:394] fc2 <- fc1
+I1126 21:27:14.481590 19980 net.cpp:356] fc2 -> fc2
+I1126 21:27:14.481611 19980 net.cpp:96] Setting up fc2
+I1126 21:27:14.481628 19980 net.cpp:103] Top shape: 10 2 1 1 (20)
+I1126 21:27:14.481647 19980 net.cpp:67] Creating Layer loss
+I1126 21:27:14.481652 19980 net.cpp:394] loss <- fc2
+I1126 21:27:14.481658 19980 net.cpp:394] loss <- label
+I1126 21:27:14.481667 19980 net.cpp:356] loss -> loss
+I1126 21:27:14.481686 19980 net.cpp:96] Setting up loss
+I1126 21:27:14.481720 19980 net.cpp:103] Top shape: 1 1 1 1 (1)
+I1126 21:27:14.481725 19980 net.cpp:109]     with loss weight 1
+I1126 21:27:14.481758 19980 net.cpp:170] loss needs backward computation.
+I1126 21:27:14.481776 19980 net.cpp:170] fc2 needs backward computation.
+I1126 21:27:14.481796 19980 net.cpp:170] relu1 needs backward computation.
+I1126 21:27:14.481799 19980 net.cpp:170] fc1 needs backward computation.
+I1126 21:27:14.481804 19980 net.cpp:172] data does not need backward computation.
+I1126 21:27:14.481809 19980 net.cpp:208] This network produces output loss
+I1126 21:27:14.481817 19980 net.cpp:467] Collecting Learning Rate and Weight Decay.
+I1126 21:27:14.481835 19980 net.cpp:219] Network initialization done.
+I1126 21:27:14.481840 19980 net.cpp:220] Memory required for data: 3484
+I1126 21:27:14.482056 19980 solver.cpp:151] Creating test net (#0) specified by net file: /home/leon/enas907/proj/train_val.prototxt
+I1126 21:27:14.482091 19980 net.cpp:275] The NetState phase (1) differed from the phase (0) specified by a rule in layer data
+I1126 21:27:14.482175 19980 net.cpp:39] Initializing net from parameters: 
+name: "Process Monitor"
+layers {
+  top: "data"
+  top: "label"
+  name: "data"
+  type: HDF5_DATA
+  hdf5_data_param {
+    source: "/home/leon/enas907/proj/data/test.txt"
+    batch_size: 10
+  }
+  include {
+    phase: TEST
+  }
+}
+layers {
+  bottom: "data"
+  top: "fc1"
+  name: "fc1"
+  type: INNER_PRODUCT
+  blobs_lr: 1
+  blobs_lr: 2
+  weight_decay: 1
+  weight_decay: 0
+  inner_product_param {
+    num_output: 40
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+layers {
+  bottom: "fc1"
+  top: "fc1"
+  name: "relu1"
+  type: RELU
+}
+layers {
+  bottom: "fc1"
+  top: "fc2"
+  name: "fc2"
+  type: INNER_PRODUCT
+  blobs_lr: 1
+  blobs_lr: 2
+  weight_decay: 1
+  weight_decay: 0
+  inner_product_param {
+    num_output: 2
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
+layers {
+  bottom: "fc2"
+  bottom: "label"
+  top: "loss"
+  name: "loss"
+  type: SOFTMAX_LOSS
+}
+layers {
+  bottom: "fc2"
+  bottom: "label"
+  top: "accuracy"
+  name: "accuracy"
+  type: ACCURACY
+  include {
+    phase: TEST
+  }
+}
+state {
+  phase: TEST
+}
+I1126 21:27:14.482595 19980 net.cpp:67] Creating Layer data
+I1126 21:27:14.482605 19980 net.cpp:356] data -> data
+I1126 21:27:14.482614 19980 net.cpp:356] data -> label
+I1126 21:27:14.482630 19980 net.cpp:96] Setting up data
+I1126 21:27:14.482636 19980 hdf5_data_layer.cpp:57] Loading filename from /home/leon/enas907/proj/data/test.txt
+I1126 21:27:14.482668 19980 hdf5_data_layer.cpp:69] Number of files: 1
+I1126 21:27:14.482676 19980 hdf5_data_layer.cpp:29] Loading HDF5 file/home/leon/enas907/proj/data/test.h5
+I1126 21:27:14.483686 19980 hdf5_data_layer.cpp:49] Successully loaded 2500 rows
+I1126 21:27:14.483700 19980 hdf5_data_layer.cpp:81] output data size: 10,4,1,1
+I1126 21:27:14.483707 19980 net.cpp:103] Top shape: 10 4 1 1 (40)
+I1126 21:27:14.483714 19980 net.cpp:103] Top shape: 10 1 1 1 (10)
+I1126 21:27:14.483724 19980 net.cpp:67] Creating Layer label_data_1_split
+I1126 21:27:14.483729 19980 net.cpp:394] label_data_1_split <- label
+I1126 21:27:14.483736 19980 net.cpp:356] label_data_1_split -> label_data_1_split_0
+I1126 21:27:14.483747 19980 net.cpp:356] label_data_1_split -> label_data_1_split_1
+I1126 21:27:14.483753 19980 net.cpp:96] Setting up label_data_1_split
+I1126 21:27:14.483762 19980 net.cpp:103] Top shape: 10 1 1 1 (10)
+I1126 21:27:14.483768 19980 net.cpp:103] Top shape: 10 1 1 1 (10)
+I1126 21:27:14.483775 19980 net.cpp:67] Creating Layer fc1
+I1126 21:27:14.483783 19980 net.cpp:394] fc1 <- data
+I1126 21:27:14.483788 19980 net.cpp:356] fc1 -> fc1
+I1126 21:27:14.483798 19980 net.cpp:96] Setting up fc1
+I1126 21:27:14.483813 19980 net.cpp:103] Top shape: 10 40 1 1 (400)
+I1126 21:27:14.483824 19980 net.cpp:67] Creating Layer relu1
+I1126 21:27:14.483830 19980 net.cpp:394] relu1 <- fc1
+I1126 21:27:14.483837 19980 net.cpp:345] relu1 -> fc1 (in-place)
+I1126 21:27:14.483844 19980 net.cpp:96] Setting up relu1
+I1126 21:27:14.483856 19980 net.cpp:103] Top shape: 10 40 1 1 (400)
+I1126 21:27:14.483865 19980 net.cpp:67] Creating Layer fc2
+I1126 21:27:14.483870 19980 net.cpp:394] fc2 <- fc1
+I1126 21:27:14.483889 19980 net.cpp:356] fc2 -> fc2
+I1126 21:27:14.483897 19980 net.cpp:96] Setting up fc2
+I1126 21:27:14.483909 19980 net.cpp:103] Top shape: 10 2 1 1 (20)
+I1126 21:27:14.483919 19980 net.cpp:67] Creating Layer fc2_fc2_0_split
+I1126 21:27:14.483925 19980 net.cpp:394] fc2_fc2_0_split <- fc2
+I1126 21:27:14.483932 19980 net.cpp:356] fc2_fc2_0_split -> fc2_fc2_0_split_0
+I1126 21:27:14.483940 19980 net.cpp:356] fc2_fc2_0_split -> fc2_fc2_0_split_1
+I1126 21:27:14.483948 19980 net.cpp:96] Setting up fc2_fc2_0_split
+I1126 21:27:14.483955 19980 net.cpp:103] Top shape: 10 2 1 1 (20)
+I1126 21:27:14.483961 19980 net.cpp:103] Top shape: 10 2 1 1 (20)
+I1126 21:27:14.483968 19980 net.cpp:67] Creating Layer loss
+I1126 21:27:14.483974 19980 net.cpp:394] loss <- fc2_fc2_0_split_0
+I1126 21:27:14.483981 19980 net.cpp:394] loss <- label_data_1_split_0
+I1126 21:27:14.483989 19980 net.cpp:356] loss -> loss
+I1126 21:27:14.483996 19980 net.cpp:96] Setting up loss
+I1126 21:27:14.484004 19980 net.cpp:103] Top shape: 1 1 1 1 (1)
+I1126 21:27:14.484010 19980 net.cpp:109]     with loss weight 1
+I1126 21:27:14.484020 19980 net.cpp:67] Creating Layer accuracy
+I1126 21:27:14.484026 19980 net.cpp:394] accuracy <- fc2_fc2_0_split_1
+I1126 21:27:14.484033 19980 net.cpp:394] accuracy <- label_data_1_split_1
+I1126 21:27:14.484040 19980 net.cpp:356] accuracy -> accuracy
+I1126 21:27:14.484048 19980 net.cpp:96] Setting up accuracy
+I1126 21:27:14.484056 19980 net.cpp:103] Top shape: 1 1 1 1 (1)
+I1126 21:27:14.484062 19980 net.cpp:172] accuracy does not need backward computation.
+I1126 21:27:14.484068 19980 net.cpp:170] loss needs backward computation.
+I1126 21:27:14.484074 19980 net.cpp:170] fc2_fc2_0_split needs backward computation.
+I1126 21:27:14.484081 19980 net.cpp:170] fc2 needs backward computation.
+I1126 21:27:14.484087 19980 net.cpp:170] relu1 needs backward computation.
+I1126 21:27:14.484092 19980 net.cpp:170] fc1 needs backward computation.
+I1126 21:27:14.484098 19980 net.cpp:172] label_data_1_split does not need backward computation.
+I1126 21:27:14.484104 19980 net.cpp:172] data does not need backward computation.
+I1126 21:27:14.484110 19980 net.cpp:208] This network produces output accuracy
+I1126 21:27:14.484117 19980 net.cpp:208] This network produces output loss
+I1126 21:27:14.484127 19980 net.cpp:467] Collecting Learning Rate and Weight Decay.
+I1126 21:27:14.484133 19980 net.cpp:219] Network initialization done.
+I1126 21:27:14.484139 19980 net.cpp:220] Memory required for data: 3728
+I1126 21:27:14.484161 19980 solver.cpp:41] Solver scaffolding done.
+I1126 21:27:14.484169 19980 solver.cpp:160] Solving Process Monitor
+I1126 21:27:14.484184 19980 solver.cpp:247] Iteration 0, Testing net (#0)
+I1126 21:27:14.659242 19980 solver.cpp:298]     Test net output #0: accuracy = 0.604001
+I1126 21:27:14.659263 19980 solver.cpp:298]     Test net output #1: loss = 0.693038 (* 1 = 0.693038 loss)
+I1126 21:27:14.659658 19980 solver.cpp:191] Iteration 0, loss = 0.693196
+I1126 21:27:14.659675 19980 solver.cpp:206]     Train net output #0: loss = 0.693196 (* 1 = 0.693196 loss)
+I1126 21:27:14.659685 19980 solver.cpp:403] Iteration 0, lr = 0.01
+I1126 21:27:14.686594 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_100.caffemodel
+I1126 21:27:14.687397 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_100.solverstate
+I1126 21:27:14.715019 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_200.caffemodel
+I1126 21:27:14.715092 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_200.solverstate
+I1126 21:27:14.742079 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_300.caffemodel
+I1126 21:27:14.742163 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_300.solverstate
+I1126 21:27:14.769054 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_400.caffemodel
+I1126 21:27:14.769140 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_400.solverstate
+I1126 21:27:14.796178 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_500.caffemodel
+I1126 21:27:14.796264 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_500.solverstate
+I1126 21:27:14.823920 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_600.caffemodel
+I1126 21:27:14.824010 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_600.solverstate
+I1126 21:27:14.849987 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_700.caffemodel
+I1126 21:27:14.850075 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_700.solverstate
+I1126 21:27:14.862993 19980 hdf5_data_layer.cpp:29] Loading HDF5 file/home/leon/enas907/proj/data/train.h5
+I1126 21:27:14.863404 19980 hdf5_data_layer.cpp:49] Successully loaded 7500 rows
+I1126 21:27:14.876356 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_800.caffemodel
+I1126 21:27:14.876469 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_800.solverstate
+I1126 21:27:14.902343 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_900.caffemodel
+I1126 21:27:14.902451 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_900.solverstate
+I1126 21:27:14.928395 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_1000.caffemodel
+I1126 21:27:14.928499 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_1000.solverstate
+I1126 21:27:14.928544 19980 solver.cpp:247] Iteration 1000, Testing net (#0)
+I1126 21:27:15.092236 19980 solver.cpp:298]     Test net output #0: accuracy = 0.7904
+I1126 21:27:15.092262 19980 solver.cpp:298]     Test net output #1: loss = 0.48498 (* 1 = 0.48498 loss)
+I1126 21:27:15.092460 19980 solver.cpp:191] Iteration 1000, loss = 0.421514
+I1126 21:27:15.092485 19980 solver.cpp:206]     Train net output #0: loss = 0.421514 (* 1 = 0.421514 loss)
+I1126 21:27:15.092494 19980 solver.cpp:403] Iteration 1000, lr = 0.01
+I1126 21:27:15.117656 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_1100.caffemodel
+I1126 21:27:15.117744 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_1100.solverstate
+I1126 21:27:15.143218 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_1200.caffemodel
+I1126 21:27:15.143302 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_1200.solverstate
+I1126 21:27:15.168601 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_1300.caffemodel
+I1126 21:27:15.168685 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_1300.solverstate
+I1126 21:27:15.194124 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_1400.caffemodel
+I1126 21:27:15.194211 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_1400.solverstate
+I1126 21:27:15.219548 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_1500.caffemodel
+I1126 21:27:15.219633 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_1500.solverstate
+I1126 21:27:15.219676 19980 hdf5_data_layer.cu:33] looping around to first file
+I1126 21:27:15.219693 19980 hdf5_data_layer.cpp:29] Loading HDF5 file/home/leon/enas907/proj/data/train.h5
+I1126 21:27:15.219987 19980 hdf5_data_layer.cpp:49] Successully loaded 7500 rows
+I1126 21:27:15.245442 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_1600.caffemodel
+I1126 21:27:15.245532 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_1600.solverstate
+I1126 21:27:15.270963 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_1700.caffemodel
+I1126 21:27:15.271059 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_1700.solverstate
+I1126 21:27:15.296532 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_1800.caffemodel
+I1126 21:27:15.296618 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_1800.solverstate
+I1126 21:27:15.321977 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_1900.caffemodel
+I1126 21:27:15.322062 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_1900.solverstate
+I1126 21:27:15.347496 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_2000.caffemodel
+I1126 21:27:15.347579 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_2000.solverstate
+I1126 21:27:15.347622 19980 solver.cpp:247] Iteration 2000, Testing net (#0)
+I1126 21:27:15.509563 19980 solver.cpp:298]     Test net output #0: accuracy = 0.7852
+I1126 21:27:15.509582 19980 solver.cpp:298]     Test net output #1: loss = 0.477763 (* 1 = 0.477763 loss)
+I1126 21:27:15.509778 19980 solver.cpp:191] Iteration 2000, loss = 0.646912
+I1126 21:27:15.509791 19980 solver.cpp:206]     Train net output #0: loss = 0.646912 (* 1 = 0.646912 loss)
+I1126 21:27:15.509799 19980 solver.cpp:403] Iteration 2000, lr = 0.01
+I1126 21:27:15.535064 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_2100.caffemodel
+I1126 21:27:15.535152 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_2100.solverstate
+I1126 21:27:15.560554 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_2200.caffemodel
+I1126 21:27:15.560641 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_2200.solverstate
+I1126 21:27:15.573330 19980 hdf5_data_layer.cpp:29] Loading HDF5 file/home/leon/enas907/proj/data/train.h5
+I1126 21:27:15.573598 19980 hdf5_data_layer.cpp:49] Successully loaded 7500 rows
+I1126 21:27:15.586395 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_2300.caffemodel
+I1126 21:27:15.586506 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_2300.solverstate
+I1126 21:27:15.611846 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_2400.caffemodel
+I1126 21:27:15.611951 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_2400.solverstate
+I1126 21:27:15.637426 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_2500.caffemodel
+I1126 21:27:15.637531 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_2500.solverstate
+I1126 21:27:15.662833 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_2600.caffemodel
+I1126 21:27:15.662925 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_2600.solverstate
+I1126 21:27:15.688421 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_2700.caffemodel
+I1126 21:27:15.688526 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_2700.solverstate
+I1126 21:27:15.713867 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_2800.caffemodel
+I1126 21:27:15.713953 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_2800.solverstate
+I1126 21:27:15.739420 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_2900.caffemodel
+I1126 21:27:15.739524 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_2900.solverstate
+I1126 21:27:15.764865 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_3000.caffemodel
+I1126 21:27:15.764971 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_3000.solverstate
+I1126 21:27:15.765014 19980 solver.cpp:247] Iteration 3000, Testing net (#0)
+I1126 21:27:15.926923 19980 solver.cpp:298]     Test net output #0: accuracy = 0.7748
+I1126 21:27:15.926940 19980 solver.cpp:298]     Test net output #1: loss = 0.477052 (* 1 = 0.477052 loss)
+I1126 21:27:15.926946 19980 hdf5_data_layer.cu:33] looping around to first file
+I1126 21:27:15.926951 19980 hdf5_data_layer.cpp:29] Loading HDF5 file/home/leon/enas907/proj/data/train.h5
+I1126 21:27:15.927203 19980 hdf5_data_layer.cpp:49] Successully loaded 7500 rows
+I1126 21:27:15.927435 19980 solver.cpp:191] Iteration 3000, loss = 0.495768
+I1126 21:27:15.927450 19980 solver.cpp:206]     Train net output #0: loss = 0.495768 (* 1 = 0.495768 loss)
+I1126 21:27:15.927456 19980 solver.cpp:403] Iteration 3000, lr = 0.01
+I1126 21:27:15.952594 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_3100.caffemodel
+I1126 21:27:15.952705 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_3100.solverstate
+I1126 21:27:15.978201 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_3200.caffemodel
+I1126 21:27:15.978312 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_3200.solverstate
+I1126 21:27:16.003698 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_3300.caffemodel
+I1126 21:27:16.003804 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_3300.solverstate
+I1126 21:27:16.029258 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_3400.caffemodel
+I1126 21:27:16.029366 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_3400.solverstate
+I1126 21:27:16.054707 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_3500.caffemodel
+I1126 21:27:16.054815 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_3500.solverstate
+I1126 21:27:16.080365 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_3600.caffemodel
+I1126 21:27:16.080471 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_3600.solverstate
+I1126 21:27:16.105742 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_3700.caffemodel
+I1126 21:27:16.105847 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_3700.solverstate
+I1126 21:27:16.118548 19980 hdf5_data_layer.cpp:29] Loading HDF5 file/home/leon/enas907/proj/data/train.h5
+I1126 21:27:16.118804 19980 hdf5_data_layer.cpp:49] Successully loaded 7500 rows
+I1126 21:27:16.131559 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_3800.caffemodel
+I1126 21:27:16.131665 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_3800.solverstate
+I1126 21:27:16.156994 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_3900.caffemodel
+I1126 21:27:16.157100 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_3900.solverstate
+I1126 21:27:16.182616 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_4000.caffemodel
+I1126 21:27:16.182725 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_4000.solverstate
+I1126 21:27:16.182797 19980 solver.cpp:247] Iteration 4000, Testing net (#0)
+I1126 21:27:16.344753 19980 solver.cpp:298]     Test net output #0: accuracy = 0.8144
+I1126 21:27:16.344771 19980 solver.cpp:298]     Test net output #1: loss = 0.444976 (* 1 = 0.444976 loss)
+I1126 21:27:16.344969 19980 solver.cpp:191] Iteration 4000, loss = 0.441761
+I1126 21:27:16.344995 19980 solver.cpp:206]     Train net output #0: loss = 0.441761 (* 1 = 0.441761 loss)
+I1126 21:27:16.345002 19980 solver.cpp:403] Iteration 4000, lr = 0.01
+I1126 21:27:16.370159 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_4100.caffemodel
+I1126 21:27:16.370245 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_4100.solverstate
+I1126 21:27:16.395753 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_4200.caffemodel
+I1126 21:27:16.395843 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_4200.solverstate
+I1126 21:27:16.421298 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_4300.caffemodel
+I1126 21:27:16.421382 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_4300.solverstate
+I1126 21:27:16.446732 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_4400.caffemodel
+I1126 21:27:16.446816 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_4400.solverstate
+I1126 21:27:16.472290 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_4500.caffemodel
+I1126 21:27:16.472376 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_4500.solverstate
+I1126 21:27:16.472419 19980 hdf5_data_layer.cu:33] looping around to first file
+I1126 21:27:16.472436 19980 hdf5_data_layer.cpp:29] Loading HDF5 file/home/leon/enas907/proj/data/train.h5
+I1126 21:27:16.472700 19980 hdf5_data_layer.cpp:49] Successully loaded 7500 rows
+I1126 21:27:16.498071 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_4600.caffemodel
+I1126 21:27:16.498143 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_4600.solverstate
+I1126 21:27:16.523540 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_4700.caffemodel
+I1126 21:27:16.523627 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_4700.solverstate
+I1126 21:27:16.548933 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_4800.caffemodel
+I1126 21:27:16.549018 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_4800.solverstate
+I1126 21:27:16.574489 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_4900.caffemodel
+I1126 21:27:16.574575 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_4900.solverstate
+I1126 21:27:16.599975 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_5000.caffemodel
+I1126 21:27:16.600060 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_5000.solverstate
+I1126 21:27:16.600103 19980 solver.cpp:247] Iteration 5000, Testing net (#0)
+I1126 21:27:16.761924 19980 solver.cpp:298]     Test net output #0: accuracy = 0.814801
+I1126 21:27:16.761942 19980 solver.cpp:298]     Test net output #1: loss = 0.423685 (* 1 = 0.423685 loss)
+I1126 21:27:16.762141 19980 solver.cpp:191] Iteration 5000, loss = 0.584266
+I1126 21:27:16.762156 19980 solver.cpp:206]     Train net output #0: loss = 0.584266 (* 1 = 0.584266 loss)
+I1126 21:27:16.762161 19980 solver.cpp:403] Iteration 5000, lr = 0.001
+I1126 21:27:16.787344 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_5100.caffemodel
+I1126 21:27:16.787431 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_5100.solverstate
+I1126 21:27:16.812872 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_5200.caffemodel
+I1126 21:27:16.812978 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_5200.solverstate
+I1126 21:27:16.825675 19980 hdf5_data_layer.cpp:29] Loading HDF5 file/home/leon/enas907/proj/data/train.h5
+I1126 21:27:16.825928 19980 hdf5_data_layer.cpp:49] Successully loaded 7500 rows
+I1126 21:27:16.838732 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_5300.caffemodel
+I1126 21:27:16.838837 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_5300.solverstate
+I1126 21:27:16.864238 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_5400.caffemodel
+I1126 21:27:16.864349 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_5400.solverstate
+I1126 21:27:16.889829 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_5500.caffemodel
+I1126 21:27:16.889935 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_5500.solverstate
+I1126 21:27:16.915418 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_5600.caffemodel
+I1126 21:27:16.915524 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_5600.solverstate
+I1126 21:27:16.940865 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_5700.caffemodel
+I1126 21:27:16.940971 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_5700.solverstate
+I1126 21:27:16.966406 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_5800.caffemodel
+I1126 21:27:16.966513 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_5800.solverstate
+I1126 21:27:16.991956 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_5900.caffemodel
+I1126 21:27:16.992061 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_5900.solverstate
+I1126 21:27:17.017518 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_6000.caffemodel
+I1126 21:27:17.017623 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_6000.solverstate
+I1126 21:27:17.017666 19980 solver.cpp:247] Iteration 6000, Testing net (#0)
+I1126 21:27:17.179726 19980 solver.cpp:298]     Test net output #0: accuracy = 0.8224
+I1126 21:27:17.179744 19980 solver.cpp:298]     Test net output #1: loss = 0.413151 (* 1 = 0.413151 loss)
+I1126 21:27:17.179750 19980 hdf5_data_layer.cu:33] looping around to first file
+I1126 21:27:17.179755 19980 hdf5_data_layer.cpp:29] Loading HDF5 file/home/leon/enas907/proj/data/train.h5
+I1126 21:27:17.180027 19980 hdf5_data_layer.cpp:49] Successully loaded 7500 rows
+I1126 21:27:17.180259 19980 solver.cpp:191] Iteration 6000, loss = 0.32087
+I1126 21:27:17.180275 19980 solver.cpp:206]     Train net output #0: loss = 0.32087 (* 1 = 0.32087 loss)
+I1126 21:27:17.180282 19980 solver.cpp:403] Iteration 6000, lr = 0.001
+I1126 21:27:17.205457 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_6100.caffemodel
+I1126 21:27:17.205567 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_6100.solverstate
+I1126 21:27:17.230912 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_6200.caffemodel
+I1126 21:27:17.231017 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_6200.solverstate
+I1126 21:27:17.256469 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_6300.caffemodel
+I1126 21:27:17.256575 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_6300.solverstate
+I1126 21:27:17.282037 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_6400.caffemodel
+I1126 21:27:17.282142 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_6400.solverstate
+I1126 21:27:17.307560 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_6500.caffemodel
+I1126 21:27:17.307641 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_6500.solverstate
+I1126 21:27:17.333022 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_6600.caffemodel
+I1126 21:27:17.333127 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_6600.solverstate
+I1126 21:27:17.358516 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_6700.caffemodel
+I1126 21:27:17.358621 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_6700.solverstate
+I1126 21:27:17.371244 19980 hdf5_data_layer.cpp:29] Loading HDF5 file/home/leon/enas907/proj/data/train.h5
+I1126 21:27:17.371495 19980 hdf5_data_layer.cpp:49] Successully loaded 7500 rows
+I1126 21:27:17.384280 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_6800.caffemodel
+I1126 21:27:17.384390 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_6800.solverstate
+I1126 21:27:17.409824 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_6900.caffemodel
+I1126 21:27:17.409929 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_6900.solverstate
+I1126 21:27:17.435333 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_7000.caffemodel
+I1126 21:27:17.435437 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_7000.solverstate
+I1126 21:27:17.435487 19980 solver.cpp:247] Iteration 7000, Testing net (#0)
+I1126 21:27:17.597414 19980 solver.cpp:298]     Test net output #0: accuracy = 0.830401
+I1126 21:27:17.597432 19980 solver.cpp:298]     Test net output #1: loss = 0.414342 (* 1 = 0.414342 loss)
+I1126 21:27:17.597631 19980 solver.cpp:191] Iteration 7000, loss = 0.33878
+I1126 21:27:17.597645 19980 solver.cpp:206]     Train net output #0: loss = 0.33878 (* 1 = 0.33878 loss)
+I1126 21:27:17.597651 19980 solver.cpp:403] Iteration 7000, lr = 0.001
+I1126 21:27:17.622823 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_7100.caffemodel
+I1126 21:27:17.622927 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_7100.solverstate
+I1126 21:27:17.648319 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_7200.caffemodel
+I1126 21:27:17.648423 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_7200.solverstate
+I1126 21:27:17.673837 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_7300.caffemodel
+I1126 21:27:17.673941 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_7300.solverstate
+I1126 21:27:17.699398 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_7400.caffemodel
+I1126 21:27:17.699503 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_7400.solverstate
+I1126 21:27:17.724874 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_7500.caffemodel
+I1126 21:27:17.724984 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_7500.solverstate
+I1126 21:27:17.725029 19980 hdf5_data_layer.cu:33] looping around to first file
+I1126 21:27:17.725047 19980 hdf5_data_layer.cpp:29] Loading HDF5 file/home/leon/enas907/proj/data/train.h5
+I1126 21:27:17.725291 19980 hdf5_data_layer.cpp:49] Successully loaded 7500 rows
+I1126 21:27:17.750742 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_7600.caffemodel
+I1126 21:27:17.750851 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_7600.solverstate
+I1126 21:27:17.776154 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_7700.caffemodel
+I1126 21:27:17.776260 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_7700.solverstate
+I1126 21:27:17.801710 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_7800.caffemodel
+I1126 21:27:17.801816 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_7800.solverstate
+I1126 21:27:17.827172 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_7900.caffemodel
+I1126 21:27:17.827276 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_7900.solverstate
+I1126 21:27:17.852710 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_8000.caffemodel
+I1126 21:27:17.852821 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_8000.solverstate
+I1126 21:27:17.852866 19980 solver.cpp:247] Iteration 8000, Testing net (#0)
+I1126 21:27:18.014976 19980 solver.cpp:298]     Test net output #0: accuracy = 0.8236
+I1126 21:27:18.014994 19980 solver.cpp:298]     Test net output #1: loss = 0.408977 (* 1 = 0.408977 loss)
+I1126 21:27:18.015193 19980 solver.cpp:191] Iteration 8000, loss = 0.512031
+I1126 21:27:18.015208 19980 solver.cpp:206]     Train net output #0: loss = 0.512031 (* 1 = 0.512031 loss)
+I1126 21:27:18.015213 19980 solver.cpp:403] Iteration 8000, lr = 0.001
+I1126 21:27:18.040401 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_8100.caffemodel
+I1126 21:27:18.040490 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_8100.solverstate
+I1126 21:27:18.065865 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_8200.caffemodel
+I1126 21:27:18.065953 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_8200.solverstate
+I1126 21:27:18.078722 19980 hdf5_data_layer.cpp:29] Loading HDF5 file/home/leon/enas907/proj/data/train.h5
+I1126 21:27:18.078975 19980 hdf5_data_layer.cpp:49] Successully loaded 7500 rows
+I1126 21:27:18.091814 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_8300.caffemodel
+I1126 21:27:18.091924 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_8300.solverstate
+I1126 21:27:18.117281 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_8400.caffemodel
+I1126 21:27:18.117385 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_8400.solverstate
+I1126 21:27:18.142818 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_8500.caffemodel
+I1126 21:27:18.142921 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_8500.solverstate
+I1126 21:27:18.168331 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_8600.caffemodel
+I1126 21:27:18.168427 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_8600.solverstate
+I1126 21:27:18.193892 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_8700.caffemodel
+I1126 21:27:18.193997 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_8700.solverstate
+I1126 21:27:18.219334 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_8800.caffemodel
+I1126 21:27:18.219439 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_8800.solverstate
+I1126 21:27:18.244824 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_8900.caffemodel
+I1126 21:27:18.244930 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_8900.solverstate
+I1126 21:27:18.270390 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_9000.caffemodel
+I1126 21:27:18.270495 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_9000.solverstate
+I1126 21:27:18.270540 19980 solver.cpp:247] Iteration 9000, Testing net (#0)
+I1126 21:27:18.432476 19980 solver.cpp:298]     Test net output #0: accuracy = 0.8232
+I1126 21:27:18.432493 19980 solver.cpp:298]     Test net output #1: loss = 0.406359 (* 1 = 0.406359 loss)
+I1126 21:27:18.432500 19980 hdf5_data_layer.cu:33] looping around to first file
+I1126 21:27:18.432504 19980 hdf5_data_layer.cpp:29] Loading HDF5 file/home/leon/enas907/proj/data/train.h5
+I1126 21:27:18.432752 19980 hdf5_data_layer.cpp:49] Successully loaded 7500 rows
+I1126 21:27:18.432984 19980 solver.cpp:191] Iteration 9000, loss = 0.306005
+I1126 21:27:18.432999 19980 solver.cpp:206]     Train net output #0: loss = 0.306005 (* 1 = 0.306005 loss)
+I1126 21:27:18.433007 19980 solver.cpp:403] Iteration 9000, lr = 0.001
+I1126 21:27:18.458189 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_9100.caffemodel
+I1126 21:27:18.458307 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_9100.solverstate
+I1126 21:27:18.483729 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_9200.caffemodel
+I1126 21:27:18.483834 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_9200.solverstate
+I1126 21:27:18.509203 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_9300.caffemodel
+I1126 21:27:18.509309 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_9300.solverstate
+I1126 21:27:18.534759 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_9400.caffemodel
+I1126 21:27:18.534864 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_9400.solverstate
+I1126 21:27:18.560220 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_9500.caffemodel
+I1126 21:27:18.560323 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_9500.solverstate
+I1126 21:27:18.585755 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_9600.caffemodel
+I1126 21:27:18.585860 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_9600.solverstate
+I1126 21:27:18.611251 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_9700.caffemodel
+I1126 21:27:18.611356 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_9700.solverstate
+I1126 21:27:18.623993 19980 hdf5_data_layer.cpp:29] Loading HDF5 file/home/leon/enas907/proj/data/train.h5
+I1126 21:27:18.624244 19980 hdf5_data_layer.cpp:49] Successully loaded 7500 rows
+I1126 21:27:18.637033 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_9800.caffemodel
+I1126 21:27:18.637143 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_9800.solverstate
+I1126 21:27:18.662472 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_9900.caffemodel
+I1126 21:27:18.662578 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_9900.solverstate
+I1126 21:27:18.688103 19980 solver.cpp:317] Snapshotting to /home/leon/enas907/proj/data/train_iter_10000.caffemodel
+I1126 21:27:18.688238 19980 solver.cpp:324] Snapshotting solver state to /home/leon/enas907/proj/data/train_iter_10000.solverstate
+I1126 21:27:18.688498 19980 solver.cpp:228] Iteration 10000, loss = 0.319104
+I1126 21:27:18.688511 19980 solver.cpp:247] Iteration 10000, Testing net (#0)
+I1126 21:27:18.850383 19980 solver.cpp:298]     Test net output #0: accuracy = 0.8316
+I1126 21:27:18.850399 19980 solver.cpp:298]     Test net output #1: loss = 0.40811 (* 1 = 0.40811 loss)
+I1126 21:27:18.850406 19980 solver.cpp:233] Optimization Done.
+I1126 21:27:18.850411 19980 caffe.cpp:121] Optimization Done.
+leon@leon-OptiPlex-3020: exit
+exit
+
+Script done on Wed 26 Nov 2014 09:27:21 PM EST
