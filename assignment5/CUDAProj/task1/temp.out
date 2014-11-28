@@ -1,12 +1,130 @@
-/usr/local/cuda-6.5/bin/nvcc -gencode=arch=compute_50,code=\"sm_50,compute_50\" -I/usr/local/cuda-6.5/include -O3 -o Task1GPUsp.o -c Task1GPUsp.cu
-/usr/local/cuda-6.5/bin/nvcc -gencode=arch=compute_50,code=\"sm_50,compute_50\" -L/usr/local/cuda-6.5/lib64 -lcuda -lcudart -lm -o Task1GPUsp Task1GPUsp.o
-cc    -c -o Task1CPUsp.o Task1CPUsp.c
-/usr/local/cuda-6.5/bin/nvcc -gencode=arch=compute_50,code=\"sm_50,compute_50\" -L/usr/local/cuda-6.5/lib64 -lcuda -lcudart -lm -o Task1CPUsp Task1CPUsp.o
-/usr/local/cuda-6.5/bin/nvcc -gencode=arch=compute_50,code=\"sm_50,compute_50\" -I/usr/local/cuda-6.5/include -O3 -o Task1GPUdp.o -c Task1GPUdp.cu
-/usr/local/cuda-6.5/bin/nvcc -gencode=arch=compute_50,code=\"sm_50,compute_50\" -L/usr/local/cuda-6.5/lib64 -lcuda -lcudart -lm -o Task1GPUdp Task1GPUdp.o
-cc    -c -o Task1CPUdp.o Task1CPUdp.c
-/usr/local/cuda-6.5/bin/nvcc -gencode=arch=compute_50,code=\"sm_50,compute_50\" -L/usr/local/cuda-6.5/lib64 -lcuda -lcudart -lm -o Task1CPUdp Task1CPUdp.o
-/usr/local/cuda-6.5/bin/nvcc -gencode=arch=compute_50,code=\"sm_50,compute_50\" -I/usr/local/cuda-6.5/include -O3 -o Task2GPUsp.o -c Task2GPUsp.cu
-/usr/local/cuda-6.5/bin/nvcc -gencode=arch=compute_50,code=\"sm_50,compute_50\" -L/usr/local/cuda-6.5/lib64 -lcuda -lcudart -lm -o Task2GPUsp Task2GPUsp.o
-/usr/local/cuda-6.5/bin/nvcc -gencode=arch=compute_50,code=\"sm_50,compute_50\" -I/usr/local/cuda-6.5/include -O3 -o Task3GPUsp.o -c Task3GPUsp.cu
-/usr/local/cuda-6.5/bin/nvcc -gencode=arch=compute_50,code=\"sm_50,compute_50\" -L/usr/local/cuda-6.5/lib64 -lcuda -lcudart -lm -o Task3GPUsp Task3GPUsp.o
+Device count = 1
+A Matrix Dimension = 3x4
+B Matrix Dimension = 4x5
+C Matrix Dimension = 3x5
+Grid_x = 3 Grid_y = 2
+a
+0.18  0.40  0.17  0.21  
+0.06  0.05  0.28  0.05  
+0.32  0.27  0.37  0.22  
+b
+0.22  0.20  0.04  0.34  0.65  
+0.15  0.03  0.88  0.66  0.53  
+0.51  0.92  0.19  0.12  0.06  
+0.72  0.64  0.88  0.41  0.82  
+bx = 1, by = 1, tx = 0, ty = 0: a=0.32 b=0.04
+bx = 1, by = 1, tx = 1, ty = 0: a=0.32 b=0.34
+bx = 1, by = 1, tx = 0, ty = 1: a=0.00 b=0.04
+bx = 1, by = 1, tx = 1, ty = 1: a=0.00 b=0.34
+bx = 0, by = 1, tx = 0, ty = 0: a=0.32 b=0.22
+bx = 0, by = 1, tx = 1, ty = 0: a=0.32 b=0.20
+bx = 0, by = 1, tx = 0, ty = 1: a=0.00 b=0.22
+bx = 0, by = 1, tx = 1, ty = 1: a=0.00 b=0.20
+bx = 2, by = 0, tx = 0, ty = 0: a=0.18 b=0.65
+bx = 2, by = 0, tx = 1, ty = 0: a=0.18 b=0.00
+bx = 2, by = 0, tx = 0, ty = 1: a=0.06 b=0.65
+bx = 2, by = 0, tx = 1, ty = 1: a=0.06 b=0.00
+bx = 1, by = 0, tx = 0, ty = 0: a=0.18 b=0.04
+bx = 1, by = 0, tx = 1, ty = 0: a=0.18 b=0.34
+bx = 1, by = 0, tx = 0, ty = 1: a=0.06 b=0.04
+bx = 1, by = 0, tx = 1, ty = 1: a=0.06 b=0.34
+bx = 0, by = 0, tx = 0, ty = 0: a=0.18 b=0.22
+bx = 0, by = 0, tx = 1, ty = 0: a=0.18 b=0.20
+bx = 0, by = 0, tx = 0, ty = 1: a=0.06 b=0.22
+bx = 0, by = 0, tx = 1, ty = 1: a=0.06 b=0.20
+bx = 2, by = 1, tx = 0, ty = 0: a=0.32 b=0.65
+bx = 2, by = 1, tx = 1, ty = 0: a=0.32 b=0.00
+bx = 2, by = 1, tx = 0, ty = 1: a=0.00 b=0.65
+bx = 2, by = 1, tx = 1, ty = 1: a=0.00 b=0.00
+bx = 1, by = 0, tx = 0, ty = 0: a=0.40 b=0.88
+bx = 1, by = 0, tx = 1, ty = 0: a=0.40 b=0.66
+bx = 1, by = 0, tx = 0, ty = 1: a=0.05 b=0.88
+bx = 1, by = 0, tx = 1, ty = 1: a=0.05 b=0.66
+bx = 2, by = 0, tx = 0, ty = 0: a=0.40 b=0.53
+bx = 2, by = 0, tx = 1, ty = 0: a=0.40 b=0.00
+bx = 2, by = 0, tx = 0, ty = 1: a=0.05 b=0.53
+bx = 2, by = 0, tx = 1, ty = 1: a=0.05 b=0.00
+bx = 0, by = 1, tx = 0, ty = 0: a=0.27 b=0.15
+bx = 0, by = 1, tx = 1, ty = 0: a=0.27 b=0.03
+bx = 0, by = 1, tx = 0, ty = 1: a=0.00 b=0.15
+bx = 0, by = 1, tx = 1, ty = 1: a=0.00 b=0.03
+bx = 1, by = 1, tx = 0, ty = 0: a=0.27 b=0.88
+bx = 1, by = 1, tx = 1, ty = 0: a=0.27 b=0.66
+bx = 1, by = 1, tx = 0, ty = 1: a=0.00 b=0.88
+bx = 1, by = 1, tx = 1, ty = 1: a=0.00 b=0.66
+bx = 0, by = 0, tx = 0, ty = 0: a=0.40 b=0.15
+bx = 0, by = 0, tx = 1, ty = 0: a=0.40 b=0.03
+bx = 0, by = 0, tx = 0, ty = 1: a=0.05 b=0.15
+bx = 0, by = 0, tx = 1, ty = 1: a=0.05 b=0.03
+bx = 2, by = 1, tx = 0, ty = 0: a=0.27 b=0.53
+bx = 2, by = 1, tx = 1, ty = 0: a=0.27 b=0.00
+bx = 2, by = 1, tx = 0, ty = 1: a=0.00 b=0.53
+bx = 2, by = 1, tx = 1, ty = 1: a=0.00 b=0.00
+bx = 1, by = 0, tx = 0, ty = 0: a=0.17 b=0.19
+bx = 1, by = 0, tx = 1, ty = 0: a=0.17 b=0.12
+bx = 1, by = 0, tx = 0, ty = 1: a=0.28 b=0.19
+bx = 1, by = 0, tx = 1, ty = 1: a=0.28 b=0.12
+bx = 2, by = 0, tx = 0, ty = 0: a=0.17 b=0.06
+bx = 2, by = 0, tx = 1, ty = 0: a=0.17 b=0.00
+bx = 2, by = 0, tx = 0, ty = 1: a=0.28 b=0.06
+bx = 2, by = 0, tx = 1, ty = 1: a=0.28 b=0.00
+bx = 0, by = 1, tx = 0, ty = 0: a=0.37 b=0.51
+bx = 0, by = 1, tx = 1, ty = 0: a=0.37 b=0.92
+bx = 0, by = 1, tx = 0, ty = 1: a=0.00 b=0.51
+bx = 0, by = 1, tx = 1, ty = 1: a=0.00 b=0.92
+bx = 1, by = 1, tx = 0, ty = 0: a=0.37 b=0.19
+bx = 1, by = 1, tx = 1, ty = 0: a=0.37 b=0.12
+bx = 1, by = 1, tx = 0, ty = 1: a=0.00 b=0.19
+bx = 1, by = 1, tx = 1, ty = 1: a=0.00 b=0.12
+bx = 0, by = 0, tx = 0, ty = 0: a=0.17 b=0.51
+bx = 0, by = 0, tx = 1, ty = 0: a=0.17 b=0.92
+bx = 0, by = 0, tx = 0, ty = 1: a=0.28 b=0.51
+bx = 0, by = 0, tx = 1, ty = 1: a=0.28 b=0.92
+bx = 2, by = 1, tx = 0, ty = 0: a=0.37 b=0.06
+bx = 2, by = 1, tx = 1, ty = 0: a=0.37 b=0.00
+bx = 2, by = 1, tx = 0, ty = 1: a=0.00 b=0.06
+bx = 2, by = 1, tx = 1, ty = 1: a=0.00 b=0.00
+bx = 1, by = 0, tx = 0, ty = 0: a=0.21 b=0.88
+bx = 1, by = 0, tx = 1, ty = 0: a=0.21 b=0.41
+bx = 1, by = 0, tx = 0, ty = 1: a=0.05 b=0.88
+bx = 1, by = 0, tx = 1, ty = 1: a=0.05 b=0.41
+bx = 2, by = 0, tx = 0, ty = 0: a=0.21 b=0.82
+bx = 2, by = 0, tx = 1, ty = 0: a=0.21 b=0.00
+bx = 2, by = 0, tx = 0, ty = 1: a=0.05 b=0.82
+bx = 2, by = 0, tx = 1, ty = 1: a=0.05 b=0.00
+bx = 0, by = 1, tx = 0, ty = 0: a=0.22 b=0.72
+bx = 0, by = 1, tx = 1, ty = 0: a=0.22 b=0.64
+bx = 0, by = 1, tx = 0, ty = 1: a=0.00 b=0.72
+bx = 0, by = 1, tx = 1, ty = 1: a=0.00 b=0.64
+bx = 1, by = 1, tx = 0, ty = 0: a=0.22 b=0.88
+bx = 1, by = 1, tx = 1, ty = 0: a=0.22 b=0.41
+bx = 1, by = 1, tx = 0, ty = 1: a=0.00 b=0.88
+bx = 1, by = 1, tx = 1, ty = 1: a=0.00 b=0.41
+bx = 0, by = 0, tx = 0, ty = 0: a=0.21 b=0.72
+bx = 0, by = 0, tx = 1, ty = 0: a=0.21 b=0.64
+bx = 0, by = 0, tx = 0, ty = 1: a=0.05 b=0.72
+bx = 0, by = 0, tx = 1, ty = 1: a=0.05 b=0.64
+bx = 2, by = 1, tx = 0, ty = 0: a=0.22 b=0.82
+bx = 2, by = 1, tx = 1, ty = 0: a=0.22 b=0.00
+bx = 2, by = 1, tx = 0, ty = 1: a=0.00 b=0.82
+bx = 2, by = 1, tx = 1, ty = 1: a=0.00 b=0.00
+cvalue=0.00
+cvalue=0.00
+cvalue=0.00
+cvalue=0.00
+cvalue=0.00
+cvalue=0.00
+cvalue=0.00
+cvalue=0.00
+cvalue=0.00
+cvalue=0.00
+cvalue=0.00
+cvalue=0.00
+cvalue=0.00
+cvalue=0.00
+cvalue=0.00
+Time to calculate results on GPU: 0.693216 ms.
+c
+0.00  0.00  0.00  0.00  0.00  
+0.00  0.00  0.00  0.00  0.00  
+0.00  0.00  0.00  0.00  0.00  

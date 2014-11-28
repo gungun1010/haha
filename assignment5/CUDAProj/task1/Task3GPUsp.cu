@@ -15,7 +15,6 @@ __global__ void matmul_tile(float *a, float *b, float *c, int n, int m, int p, i
   int row = ty + blockDim.y * blockIdx.y;
   int tileNum, aIdx;
    
-   //FIXME this whole non-divisible thing doesnt fucking work
    tileNum = p/TW + (p % TW != 0);
 
   for (int tileIdx=0; tileIdx<tileNum; tileIdx++) {

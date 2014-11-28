@@ -10,37 +10,41 @@ __global__ void matmul_tile(float *a, float *b, float *c, int n, int m, int p, i
   float *aTile=&bigarray[0], *bTile=&bigarray[TW*TW];
   int tx = threadIdx.x; 
   int ty = threadIdx.y; 
-  int cvalue = 0; 
+  float cvalue = 0; 
   int col = tx + blockDim.x * blockIdx.x;
   int row = ty + blockDim.y * blockIdx.y;
-  int tileNum, aIdx;
+  int tileNum, aIdx, bIdx;
    
    //FIXME this whole non-divisible thing doesnt fucking work
    tileNum = p/TW + (p % TW != 0);
 
   for (int tileIdx=0; tileIdx<tileNum; tileIdx++) {
     aIdx = tileIdx*TW + tx;
-    if(aIdx >= p){
+    if(aIdx >= p || row >= n){
         aTile[ty*TW+tx] = 0.;
     }else{
         aTile[ty*TW+tx] = a[row*p + aIdx]; //Copy to shared memory 
     }
+    
+    bIdx = tileIdx*TW +ty;
+    if(bIdx >= p || col >= m){
+        bTile[ty*TW+tx] = 0.;
+    }else{
+        bTile[ty*TW+tx] = b[bIdx*m + col]; //Copy to shared memory 
+    }
 
-    bTile[ty*TW+tx] = b[(tileIdx*TW+ty)*m + col]; //Copy to shared memory 
-     
     __syncthreads();
-
     for (int k=0; k<TW; k++){
          cvalue += aTile[ty*TW+k] * bTile[k*TW+tx];
+         //printf("bx = %d, by = %d, tx = %d, ty = %d: a=%.2f b=%.2f\n",blockIdx.x, blockIdx.y, tx, ty, aTile[ty*TW+k],bTile[k*TW+tx]);
     }
     __syncthreads();
     
-    aTile[ty*TW+tx] = 0.;
-    bTile[ty*TW+tx] = 0.;
-
   }
-
-  c[row*m + col] = cvalue;
+  
+  if(row < n && col <m){
+      c[row*m + col] = cvalue;
+  }
 }
 
 
@@ -140,8 +144,8 @@ int main(int argc, char *argv[]) {
   printf ("a\n");
   for(i=0;i < n;i++){
     for(j=0;j < p;j++) {
-      // a[i * n + j] = (float) rand() / (float) RAND_MAX;
-      a[i * p + j] = (float) (i+j);
+      a[i * p + j] = (float) rand() / (float) RAND_MAX;
+      //a[i * p + j] = (float) (i+j);
       printf("%.2f  ", a[i * p + j]);
     }
     printf("\n");
@@ -150,8 +154,8 @@ int main(int argc, char *argv[]) {
   printf("b\n");
   for(i=0;i < p;i++){
     for(j=0;j < m;j++) {
-      //b[i * n + j] = (float) rand() / (float) RAND_MAX;
-      b[i * m + j] = (float) (i+j);
+      b[i * m + j] = (float) rand() / (float) RAND_MAX;
+      //b[i * m + j] = (float) (i+j);
       printf("%.2f  ", b[i * m + j]);
     }
     printf("\n");

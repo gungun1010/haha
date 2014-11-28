@@ -4,7 +4,8 @@
 
 void cpu_matrixmult(float *a,float *b, float **c, int n, int m, int p) {
 
-  int k,i,j,r;
+  int k,i,j;
+  float r;
 
   /*kij*/
   for (k=0; k<p; k++){
@@ -62,8 +63,8 @@ int main(int argc, char *argv[]) {
   printf ("a\n");
   for(i=0;i < n;i++){
     for(j=0;j < p;j++) {
-      // a[i * n + j] = (float) rand() / (float) RAND_MAX;
-      a[i * p + j] = (float) (i+j);
+      a[i * p + j] = (float) rand() / (float) RAND_MAX;
+      //a[i * p + j] = (float) (i+j);
       printf("%.2f  ", a[i * p + j]);
     }
     printf("\n");
@@ -72,8 +73,8 @@ int main(int argc, char *argv[]) {
   printf("b\n");
   for(i=0;i < p;i++){
     for(j=0;j < m;j++) {
-      //b[i * n + j] = (float) rand() / (float) RAND_MAX;
-      b[i * m + j] = (float) (i+j);
+      b[i * m + j] = (float) rand() / (float) RAND_MAX;
+      //b[i * m + j] = (float) (i+j);
       printf("%.2f  ", b[i * m + j]);
     }
     printf("\n");
