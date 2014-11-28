@@ -13,33 +13,30 @@ __global__ void matmul_tile(float *a, float *b, float *c, int n, int m, int p, i
   int cvalue = 0; 
   int col = tx + blockDim.x * blockIdx.x;
   int row = ty + blockDim.y * blockIdx.y;
-  int tileNum, edge;
+  int tileNum, aIdx;
+   
+   //FIXME this whole non-divisible thing doesnt fucking work
+   tileNum = p/TW + (p % TW != 0);
 
-  if((p%TW) == 0){
-      tileNum =(int) p/TW;
-      edge = TW;
-  }else{
-      tileNum =(int) p/TW+1; //if not divisible, we need one extra tile 
-
-      if(p < TW){
-          edge = p;
-      }else{
-          edge = TW;
-      }
-  }
-
-  //FIXME: when it is not divisible and p > TW, this doesn't work
-  // 1 2 3 2 2 1 1 1 right, 1 2 3 2 2 1 1 2, wrong FIXME
-  // Loop over tiles
   for (int tileIdx=0; tileIdx<tileNum; tileIdx++) {
-    aTile[ty*TW+tx] = a[row*p + tileIdx*TW + tx]; //Copy to shared memory 
+    aIdx = tileIdx*TW + tx;
+    if(aIdx >= p){
+        aTile[ty*TW+tx] = 0.;
+    }else{
+        aTile[ty*TW+tx] = a[row*p + aIdx]; //Copy to shared memory 
+    }
+
     bTile[ty*TW+tx] = b[(tileIdx*TW+ty)*m + col]; //Copy to shared memory 
      
     __syncthreads();
-    for (int k=0; k<edge; k++){
+
+    for (int k=0; k<TW; k++){
          cvalue += aTile[ty*TW+k] * bTile[k*TW+tx];
     }
     __syncthreads();
+    
+    aTile[ty*TW+tx] = 0.;
+    bTile[ty*TW+tx] = 0.;
 
   }
 
@@ -109,24 +106,23 @@ int main(int argc, char *argv[]) {
     exit (-1);
   }
 
+  //not really used in Task2 
   Grid_Dim_x = atoi(argv[6]); // non-Square grid, # of rows
   Grid_Dim_y = atoi(argv[7]); // non-Square grid, # of cols
-  if (Grid_Dim_x*Block_Dim_x < m ) {
-    printf("Error, number of threads in x dimensions less than number of array elements\n");
-    exit (-1);
-  }
-
-  if (Grid_Dim_y*Block_Dim_y < n) {
-    printf("Error, number of threads in y dimensions less than number of array elements\n");
-    exit (-1);
-  }
   
   TW = atoi(argv[8]);
    
+  if(Block_Dim_x != Block_Dim_y || Block_Dim_x != TW || Block_Dim_y != TW){
+      printf("Error, bx, by, tw must be equal\n");
+      exit(-1);
+  }
+
   printf("A Matrix Dimension = %dx%d\n",n,p);
   printf("B Matrix Dimension = %dx%d\n",p,m);
   printf("C Matrix Dimension = %dx%d\n",n,m);
-  printf("Block_Dim = %dx%d, Grid_Dim = %dx%d\n",Block_Dim_x, Block_Dim_y,Grid_Dim_x, Grid_Dim_y);
+  Grid_Dim_x = m/Block_Dim_x + (m % Block_Dim_x != 0);
+  Grid_Dim_y = n/Block_Dim_y + (n % Block_Dim_y != 0);
+  printf("Grid_x = %d Grid_y = %d\n", Grid_Dim_x,Grid_Dim_y);
 
   dim3 Grid(Grid_Dim_x, Grid_Dim_y); //Grid structure
   dim3 Block(Block_Dim_x, Block_Dim_y); //Block structure

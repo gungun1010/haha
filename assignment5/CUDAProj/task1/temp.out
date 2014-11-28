@@ -1,0 +1,12 @@
+/usr/local/cuda-6.5/bin/nvcc -gencode=arch=compute_50,code=\"sm_50,compute_50\" -I/usr/local/cuda-6.5/include -O3 -o Task1GPUsp.o -c Task1GPUsp.cu
+/usr/local/cuda-6.5/bin/nvcc -gencode=arch=compute_50,code=\"sm_50,compute_50\" -L/usr/local/cuda-6.5/lib64 -lcuda -lcudart -lm -o Task1GPUsp Task1GPUsp.o
+cc    -c -o Task1CPUsp.o Task1CPUsp.c
+/usr/local/cuda-6.5/bin/nvcc -gencode=arch=compute_50,code=\"sm_50,compute_50\" -L/usr/local/cuda-6.5/lib64 -lcuda -lcudart -lm -o Task1CPUsp Task1CPUsp.o
+/usr/local/cuda-6.5/bin/nvcc -gencode=arch=compute_50,code=\"sm_50,compute_50\" -I/usr/local/cuda-6.5/include -O3 -o Task1GPUdp.o -c Task1GPUdp.cu
+/usr/local/cuda-6.5/bin/nvcc -gencode=arch=compute_50,code=\"sm_50,compute_50\" -L/usr/local/cuda-6.5/lib64 -lcuda -lcudart -lm -o Task1GPUdp Task1GPUdp.o
+cc    -c -o Task1CPUdp.o Task1CPUdp.c
+/usr/local/cuda-6.5/bin/nvcc -gencode=arch=compute_50,code=\"sm_50,compute_50\" -L/usr/local/cuda-6.5/lib64 -lcuda -lcudart -lm -o Task1CPUdp Task1CPUdp.o
+/usr/local/cuda-6.5/bin/nvcc -gencode=arch=compute_50,code=\"sm_50,compute_50\" -I/usr/local/cuda-6.5/include -O3 -o Task2GPUsp.o -c Task2GPUsp.cu
+/usr/local/cuda-6.5/bin/nvcc -gencode=arch=compute_50,code=\"sm_50,compute_50\" -L/usr/local/cuda-6.5/lib64 -lcuda -lcudart -lm -o Task2GPUsp Task2GPUsp.o
+/usr/local/cuda-6.5/bin/nvcc -gencode=arch=compute_50,code=\"sm_50,compute_50\" -I/usr/local/cuda-6.5/include -O3 -o Task3GPUsp.o -c Task3GPUsp.cu
+/usr/local/cuda-6.5/bin/nvcc -gencode=arch=compute_50,code=\"sm_50,compute_50\" -L/usr/local/cuda-6.5/lib64 -lcuda -lcudart -lm -o Task3GPUsp Task3GPUsp.o

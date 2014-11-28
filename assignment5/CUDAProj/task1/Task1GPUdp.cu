@@ -95,10 +95,10 @@ int main(int argc, char *argv[]) {
   printf("A Matrix Dimension = %dx%d\n",n,p);
   printf("B Matrix Dimension = %dx%d\n",p,m);
   printf("C Matrix Dimension = %dx%d\n",n,m);
-  printf("Block_Dim = %dx%d, Grid_Dim = %dx%d\n",Block_Dim_x, Block_Dim_y,Grid_Dim_x, Grid_Dim_y);
+  printf("Block_x = %d Block_y = %d, Grid_x = %d Grid_y = %d\n",Block_Dim_x, Block_Dim_y,Grid_Dim_x, Grid_Dim_y);
 
-  dim3 Grid(Grid_Dim_y, Grid_Dim_x); //Grid structure
-  dim3 Block(Block_Dim_y, Block_Dim_x); //Block structure
+  dim3 Grid(Grid_Dim_x, Grid_Dim_y); //Grid structure
+  dim3 Block(Block_Dim_x, Block_Dim_y); //Block structure
 
   size_a = n * p * sizeof(double); // number of bytes in total in arrays
   size_b = p * m * sizeof(double); // number of bytes in total in arrays

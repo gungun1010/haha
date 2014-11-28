@@ -12,7 +12,7 @@ GENCODE = $(GENCODE_SM20)
 
 .SUFFIXES : .cu .ptx .c
 
-BINARIES = Task1GPUsp Task1CPUsp Task1GPUdp Task1CPUdp Task2GPUsp
+BINARIES = Task1GPUsp Task1CPUsp Task1GPUdp Task1CPUdp Task2GPUsp Task3GPUsp
 
 all: $(BINARIES)
 
@@ -29,6 +29,9 @@ Task1CPUdp: Task1CPUdp.o
 	$(NVCC) $(GENCODE) $(LFLAGS) -o $@ $<
 
 Task2GPUsp: Task2GPUsp.o
+	$(NVCC) $(GENCODE) $(LFLAGS) -o $@ $<
+
+Task3GPUsp: Task3GPUsp.o
 	$(NVCC) $(GENCODE) $(LFLAGS) -o $@ $<
 
 .cu.o:
