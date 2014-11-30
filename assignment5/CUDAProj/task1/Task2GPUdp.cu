@@ -3,19 +3,46 @@
 #include <stdlib.h>
 #include <math.h>
 
-__global__ void gpu_matrixmult(double *a, double *b, double *c, int n, int m, int p) {
 
-  int col = threadIdx.x + blockDim.x * blockIdx.x;
-  int row = threadIdx.y + blockDim.y * blockIdx.y;
+__global__ void matmul_tile(double *a, double *b, double *c, int n, int m, int p, int TW) {
+  extern __shared__ double bigarray[]; 
 
-  int indexb = col;
-  int index = row * m + col;
+  double *aTile=&bigarray[0], *bTile=&bigarray[TW*TW];
+  int tx = threadIdx.x; 
+  int ty = threadIdx.y; 
+  double cvalue = 0; 
+  int col = tx + blockDim.x * blockIdx.x;
+  int row = ty + blockDim.y * blockIdx.y;
+  int tileNum, aIdx, bIdx;
+   
+   tileNum = p/TW + (p % TW != 0);
 
-  if(col < m && row < n) {
-    c[index] = 0.;
-    for (int indexa = row*p; indexa < (row*p + p); indexa++, indexb+=m){ 
-      c[index] += a[indexa]*b[indexb];
+  for (int tileIdx=0; tileIdx<tileNum; tileIdx++) {
+    aIdx = tileIdx*TW + tx;
+    if(aIdx >= p || row >= n){
+        aTile[ty*TW+tx] = 0.;
+    }else{
+        aTile[ty*TW+tx] = a[row*p + aIdx]; //Copy to shared memory 
     }
+    
+    bIdx = tileIdx*TW +ty;
+    if(bIdx >= p || col >= m){
+        bTile[ty*TW+tx] = 0.;
+    }else{
+        bTile[ty*TW+tx] = b[bIdx*m + col]; //Copy to shared memory 
+    }
+
+    __syncthreads();
+    for (int k=0; k<TW; k++){
+         cvalue += aTile[ty*TW+k] * bTile[k*TW+tx];
+         //printf("bx = %d, by = %d, tx = %d, ty = %d: a=%.2f b=%.2f\n",blockIdx.x, blockIdx.y, tx, ty, aTile[ty*TW+k],bTile[k*TW+tx]);
+    }
+    __syncthreads();
+    
+  }
+  
+  if(row < n && col <m){
+      c[row*m + col] = cvalue;
   }
 }
 
@@ -45,6 +72,7 @@ int main(int argc, char *argv[]) {
   int Grid_Dim_y = 1; //Grid dimension, y
   int Block_Dim_x = 1; //Block dimension, x
   int Block_Dim_y = 1; //Block dimension, y
+  int TW = 1;
 
   int n,m,p; // matrix dimension
   double *a,*b,*c;
@@ -63,8 +91,9 @@ int main(int argc, char *argv[]) {
     exit(-1);
   }
   else printf("Device count = %d\n",gpucount);
-  if (sizeof(argv)<8) {
-    printf("Usage: Task1GPUsp <n> <m> <p> <block dim x> <block dim y> <grid dim x> <grid dim y>\n");
+  if (argc<8) {
+    printf("# of inputs: %d\n", argc);
+    printf("Usage: Task1GPUsp <n> <m> <p> <block dim x> <block dim y> <grid dim x> <grid dim y> <tile width>\n");
     exit (-1);
   }
 
@@ -73,29 +102,30 @@ int main(int argc, char *argv[]) {
   p = atoi(argv[3]);
   
 
-  Block_Dim_x = atoi(argv[4]); // non-Square block, x dimension size (# of cols)
-  Block_Dim_y = atoi(argv[5]); // non-Square block, y dimension size (# of rows)
+  Block_Dim_x = atoi(argv[4]); // non-Square block, # of rows
+  Block_Dim_y = atoi(argv[5]); // non-Square block, # of cols
   if (Block_Dim_x * Block_Dim_y > 1024) {
     printf("Error, too many threads in block\n");
     exit (-1);
   }
 
-  Grid_Dim_x = atoi(argv[6]); // non-Square grid, x diemnsion size (# of cols)
-  Grid_Dim_y = atoi(argv[7]); // non-Square grid, y dimension size (# of rows)
-  if (Grid_Dim_x*Block_Dim_x < m ) {
-    printf("Error, number of threads in x dimensions less than number of array elements\n");
-    exit (-1);
+  //not really used in Task2 
+  Grid_Dim_x = atoi(argv[6]); // non-Square grid, # of rows
+  Grid_Dim_y = atoi(argv[7]); // non-Square grid, # of cols
+  
+  TW = atoi(argv[8]);
+   
+  if(Block_Dim_x != Block_Dim_y || Block_Dim_x != TW || Block_Dim_y != TW){
+      printf("Error, bx, by, tw must be equal\n");
+      exit(-1);
   }
 
-  if (Grid_Dim_y*Block_Dim_y < n) {
-    printf("Error, number of threads in y dimensions less than number of array elements\n");
-    exit (-1);
-  }
-  
   printf("A Matrix Dimension = %dx%d\n",n,p);
   printf("B Matrix Dimension = %dx%d\n",p,m);
   printf("C Matrix Dimension = %dx%d\n",n,m);
-  printf("Block_x = %d Block_y = %d, Grid_x = %d Grid_y = %d\n",Block_Dim_x, Block_Dim_y,Grid_Dim_x, Grid_Dim_y);
+  Grid_Dim_x = m/Block_Dim_x + (m % Block_Dim_x != 0);
+  Grid_Dim_y = n/Block_Dim_y + (n % Block_Dim_y != 0);
+  printf("Grid_x = %d Grid_y = %d\n", Grid_Dim_x,Grid_Dim_y);
 
   dim3 Grid(Grid_Dim_x, Grid_Dim_y); //Grid structure
   dim3 Block(Block_Dim_x, Block_Dim_y); //Block structure
@@ -145,8 +175,8 @@ int main(int argc, char *argv[]) {
   
   cudaEventRecord(start, 0);
   // cudaEventSynchronize(start); // not needed
-
-  gpu_matrixmult<<<Grid,Block>>>(dev_a,dev_b,dev_c,n,m,p);
+  size_t Ns = 2 * TW*TW * sizeof(double);
+  matmul_tile<<<Grid,Block, Ns>>>(dev_a,dev_b,dev_c,n,m,p,TW);
 
   cudaEventRecord(stop, 0); // instrument code to measure end time
   cudaEventSynchronize(stop);
@@ -170,7 +200,7 @@ int main(int argc, char *argv[]) {
   cudaEventRecord(start, 0); // use same timing
   // cudaEventSynchronize(start); // not needed
 
-  cpu_matrixmult(a,b,c, n, m, p); // do calculation on host (NOTE: This computes the diff with GPU result.)
+  cpu_matrixmult(a,b,c, n,m,p); // do calculation on host (NOTE: This computes the diff with GPU result.)
 
   cudaEventRecord(stop, 0); // instrument code to measue end time
   cudaEventSynchronize(stop);

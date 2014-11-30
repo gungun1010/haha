@@ -20,16 +20,16 @@ __global__ void gpu_matrixmult(float *a, float *b, float *c, int n, int m, int p
 }
 
 
-void cpu_matrixmult(float *a,float *b, float *c, int n) {
+void cpu_matrixmult(float *a,float *b, float *c, int n, int m, int p) {
 
   int index, indexa, indexb;
   float cvalue;
-  for(int col=0;col < n; col++)
+  for(int col=0;col < m; col++)
     for(int row=0;row < n; row++) {
       indexb = col;
-      index = row * n + col;
+      index = row * m + col;
       cvalue = 0.;
-      for (indexa = row*n; indexa < (row*n + n); indexa++, indexb+=n) 
+      for (indexa = row*p; indexa < (row*p + p); indexa++, indexb+=m) 
 	cvalue += a[indexa]*b[indexb];
       c[index] -= cvalue; //NOTE: This calculates the diff between CPU and GPU computations.
     }
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
     exit(-1);
   }
   else printf("Device count = %d\n",gpucount);
-  if (sizeof(argv)<7) {
+  if (sizeof(argv)<8) {
     printf("Usage: Task1GPUsp <n> <m> <p> <block dim x> <block dim y> <grid dim x> <grid dim y>\n");
     exit (-1);
   }
@@ -82,12 +82,12 @@ int main(int argc, char *argv[]) {
 
   Grid_Dim_x = atoi(argv[6]); // non-Square grid, x diemnsion size (# of cols)
   Grid_Dim_y = atoi(argv[7]); // non-Square grid, y dimension size (# of rows)
-  if (Grid_Dim_x*Block_Dim_x < n ) {
+  if (Grid_Dim_x*Block_Dim_x < m ) {
     printf("Error, number of threads in x dimensions less than number of array elements\n");
     exit (-1);
   }
 
-  if (Grid_Dim_y*Block_Dim_y < m) {
+  if (Grid_Dim_y*Block_Dim_y < n) {
     printf("Error, number of threads in y dimensions less than number of array elements\n");
     exit (-1);
   }
@@ -110,24 +110,25 @@ int main(int argc, char *argv[]) {
 
   srand(12345);
   //int p = n; //Used here only to illustrate proper initialization for non-square case
-  printf ("a\n");
+  
+  //printf ("a\n");
   for(i=0;i < n;i++){
     for(j=0;j < p;j++) {
       a[i * p + j] = (float) rand() / (float) RAND_MAX;
       //a[i * p + j] = (float) (i+j);
-      printf("%.2f  ", a[i * p + j]);
+      //printf("%.2f  ", a[i * p + j]);
     }
-    printf("\n");
+    //printf("\n");
   }
 
-  printf("b\n");
+  //printf("b\n");
   for(i=0;i < p;i++){
     for(j=0;j < m;j++) {
       b[i * m + j] = (float) rand() / (float) RAND_MAX;
       //b[i * m + j] = (float) (i+j);
-      printf("%.2f  ", b[i * m + j]);
+      //printf("%.2f  ", b[i * m + j]);
     }
-    printf("\n");
+    //printf("\n");
   }
 
   // ------------- COMPUTATION DONE ON GPU ----------------------------
@@ -154,21 +155,22 @@ int main(int argc, char *argv[]) {
   cudaMemcpy(c,dev_c, size_c ,cudaMemcpyDeviceToHost);
 
   printf("Time to calculate results on GPU: %f ms.\n", elapsed_time_ms); // exec. time
+  /*
   printf("c\n");
   for(i=0;i < n;i++){
     for(j=0;j < m;j++) {
       printf("%.2f  ", c[i * m + j]);
     }
     printf("\n");
-  }
-  /*
+  }*/
+  
   // ------------- COMPUTATION DONE ON HOST CPU ----------------------------
   // DEBUGGING USE ONLY (AND FOR LIMITED NUMBERS OF TIMING RUNS)
 
   cudaEventRecord(start, 0); // use same timing
   // cudaEventSynchronize(start); // not needed
 
-  cpu_matrixmult(a,b,c, n); // do calculation on host (NOTE: This computes the diff with GPU result.)
+  cpu_matrixmult(a,b,c, n, m, p); // do calculation on host (NOTE: This computes the diff with GPU result.)
 
   cudaEventRecord(stop, 0); // instrument code to measue end time
   cudaEventSynchronize(stop);
@@ -193,7 +195,7 @@ int main(int argc, char *argv[]) {
   sumc = sqrt(sumc);
   error =  sumc/(n*suma*sumb);
   printf("Scaled error between GPU and CPU: %e\n", error);
-  */
+  
 
 // -------------- clean up ---------------------------------------
 

@@ -19,7 +19,7 @@ import xxhash
 import struct
 
 NUM_COLS = 40
-NUM_ITR = 100
+NUM_ITR = 10
 
 class NestedDict(dict):
     def __getitem__(self, key):
@@ -56,16 +56,15 @@ def sklearnSGD():
 def parseProcess():
     global trainData, trainLabel, testData, testLabel
     
-    trainData = np.array([])
-    trainLabel = np.array([])
-    testData = np.array([])
-    testLabel = np.array([])
+    trainData = np.array([],dtype=float)
+    trainLabel = np.array([],dtype=int)
+    testData = np.array([], dtype=float)
+    testLabel = np.array([], dtype=int)
 
     #entry[0] = ['USER', 'PID', '%CPU', '%MEM', 'VSZ', 'RSS', 'TTY', 'STAT', 'START', 'TIME', 'COMMAND']
     #USER(0), %CPU(2), %MEM(3), VSZ(4), RSS(5), TIME(9), CMD(10) are important attribute
     init = 1
     iteration = 0
-    procInfoAscii = []
 
     while iteration < NUM_ITR: #100 iteration, about 2000 samples
         shDump = commands.getoutput("ps aux --sort=-pcpu") # list of all processes in stream
@@ -87,7 +86,7 @@ def parseProcess():
                 #procInfo = ['USER', '%CPU', '%MEM', 'VSZ', 'RSS','STAT','TIME', 'COMMAND','param0', 'param1', 'param2', 'param3', 'param4', .... 'paramN']
                 #print procInfo
                 #hash in xxhash (non-cryto hashing) then convert to double
-                procInfoHash = [ struct.unpack('d', xxhash.xxh64(s).hexdigest().decode('hex'))[0] for s in procInfo]
+                procInfoHash = [ struct.unpack('l', xxhash.xxh64(s).hexdigest().decode('hex'))[0] for s in procInfo]
                 #print procInfo
                 #print procInfoHash
 
@@ -96,17 +95,11 @@ def parseProcess():
                     
                     #procInfo[7] is the command, use it as label
                     trainData=np.hstack((trainData, np.float_(procInfoHash)));
-                    trainLabel=np.hstack((trainLabel, np.float_(procInfoHash[7])));
+                    trainLabel=np.append(trainLabel, np.int_(procInfoHash[7]));
 
-                    #testData=np.hstack((testData, np.float_(procInfoHash)));
-                    #testLabel=np.hstack((testLabel, np.float_(procInfoHash[7])));
                 else:
                     trainData=np.vstack((trainData, np.float_(procInfoHash)));
-                    trainLabel=np.vstack((trainLabel, np.float_(procInfoHash[7])));
-                    
-                    #if iteration < 20:
-                     #   testData=np.vstack((testData, np.float_(procInfoHash)));
-                      #  testLabel=np.vstack((testLabel, np.float_(procInfoHash[7])));
+                    trainLabel=np.append(trainLabel, np.int_(procInfoHash[7]));
         iteration += 1
     
     # Split into train and test
@@ -154,17 +147,19 @@ def main():
     #sys.exit()
     #sklearnSGD()
 
-    print trainLabel.shape
-    print trainData.shape
-    print trainLabel.dtype
-    print trainData.dtype
-
-    print testLabel.shape
-    print testData.shape
 
     genH5()
 
     zipH5()
+    print trainLabel.shape
+    print trainData.shape
+
+    print "data type: "+str(trainData.dtype)
+    print "label type: "+str(trainLabel.dtype)
+
+    print testLabel.shape
+    print testData.shape
+    #sys.exit()
     
     #FIXME try train tomorrow
     trainDNN()
