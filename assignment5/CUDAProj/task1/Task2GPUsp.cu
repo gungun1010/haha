@@ -90,8 +90,8 @@ int main(int argc, char *argv[]) {
     printf("No GPUs are visible\n");
     exit(-1);
   }
-  else printf("Device count = %d\n",gpucount);
-  if (argc<8) {
+  //else printf("Device count = %d\n",gpucount);
+  if (argc<9) {
     printf("# of inputs: %d\n", argc);
     printf("Usage: Task1GPUsp <n> <m> <p> <block dim x> <block dim y> <grid dim x> <grid dim y> <tile width>\n");
     exit (-1);
@@ -120,12 +120,12 @@ int main(int argc, char *argv[]) {
       exit(-1);
   }
 
-  printf("A Matrix Dimension = %dx%d\n",n,p);
-  printf("B Matrix Dimension = %dx%d\n",p,m);
-  printf("C Matrix Dimension = %dx%d\n",n,m);
+  //printf("A Matrix Dimension = %dx%d\n",n,p);
+  //printf("B Matrix Dimension = %dx%d\n",p,m);
+  //printf("C Matrix Dimension = %dx%d\n",n,m);
   Grid_Dim_x = m/Block_Dim_x + (m % Block_Dim_x != 0);
   Grid_Dim_y = n/Block_Dim_y + (n % Block_Dim_y != 0);
-  printf("Grid_x = %d Grid_y = %d\n", Grid_Dim_x,Grid_Dim_y);
+  //printf("Grid_x = %d Grid_y = %d\n", Grid_Dim_x,Grid_Dim_y);
 
   dim3 Grid(Grid_Dim_x, Grid_Dim_y); //Grid structure
   dim3 Block(Block_Dim_x, Block_Dim_y); //Block structure
@@ -196,7 +196,7 @@ int main(int argc, char *argv[]) {
   
   // ------------- COMPUTATION DONE ON HOST CPU ----------------------------
   // DEBUGGING USE ONLY (AND FOR LIMITED NUMBERS OF TIMING RUNS)
-
+/*
   cudaEventRecord(start, 0); // use same timing
   // cudaEventSynchronize(start); // not needed
 
@@ -226,7 +226,7 @@ int main(int argc, char *argv[]) {
   error =  sumc/(n*suma*sumb);
   printf("Scaled error between GPU and CPU: %e\n", error);
   
-
+*/
 // -------------- clean up ---------------------------------------
 
   free(a);

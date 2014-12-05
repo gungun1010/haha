@@ -47,11 +47,11 @@ int main(int argc, char *argv[]) {
   m = atoi(argv[2]);
   p = atoi(argv[3]);
   
-  
+ /* 
   printf("A Matrix Dimension = %dx%d\n",n,p);
   printf("B Matrix Dimension = %dx%d\n",p,m);
   printf("C Matrix Dimension = %dx%d\n",n,m);
-
+*/
   size_a = n * p * sizeof(double); // number of bytes in total in arrays
   size_b = p * m * sizeof(double); // number of bytes in total in arrays
   size_c = n * m * sizeof(double); // number of bytes in total in arrays

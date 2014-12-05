@@ -7,7 +7,7 @@ NVCCFLAGS = -I$(CUDAPATH)/include -O3
 LFLAGS = -L$(CUDAPATH)/lib64 -lcuda -lcudart -lm
 
 # Compiler-specific flags (by default, we always use sm_20)
-GENCODE_SM20 = -gencode=arch=compute_50,code=\"sm_50,compute_50\"
+GENCODE_SM20 = -g -G -gencode=arch=compute_50,code=\"sm_50,compute_50\"
 GENCODE = $(GENCODE_SM20)
 
 .SUFFIXES : .cu .ptx .c
@@ -16,8 +16,8 @@ BINARIES = Task1GPUsp Task1CPUsp Task1GPUdp Task1CPUdp Task2GPUsp Task2GPUdp Tas
 
 all: $(BINARIES)
 
-CPU: Task1CPUsp Task1CPUdp
-GPU: Task1GPUsp Task1GPUdp Task2GPUsp Task2GPUdp Task3GPUsp
+cpu: Task1CPUsp Task1CPUdp
+gpu: Task1GPUsp Task1GPUdp Task2GPUsp Task2GPUdp Task3GPUsp
 
 
 Task1GPUsp: Task1GPUsp.o

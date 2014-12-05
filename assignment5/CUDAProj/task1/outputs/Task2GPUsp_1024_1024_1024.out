@@ -1,0 +1,8 @@
+Device count = 1
+A Matrix Dimension = 1024x1024
+B Matrix Dimension = 1024x1024
+C Matrix Dimension = 1024x1024
+Grid_x = 32 Grid_y = 32
+Time to calculate results on GPU: 29.614113 ms.
+Time to calculate results on CPU: 2064.246826 ms.
+Scaled error between GPU and CPU: 3.880910e-11

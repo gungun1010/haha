@@ -9,12 +9,14 @@ __global__ void matmul_tile(float *a, float *b, float *c, int n, int m, int p, i
   float *aTile=&bigarray[0], *bTile=&bigarray[TW*TW];
   int tx = threadIdx.x; 
   int ty = threadIdx.y; 
-  float *cvalue =new float[NTB];//scope: thread 
+  float *cvalue;//scope: thread 
   int col = tx + blockDim.x * blockIdx.x;
   int row = ty + blockDim.y * blockIdx.y;
-  int tileNum, aIdx, bIdx, tileIdx_m;
+  int tileNum, aIdx, bIdx, tileIdx_m, tileCol;
 
   tileNum = p/TW + (p % TW != 0);
+
+  cvalue = (float *)malloc(NTB*sizeof(float));
 
   //init c tiles
   for (tileIdx_m=0; tileIdx_m<NTB; tileIdx_m++) cvalue[tileIdx_m] = 0.;
@@ -30,28 +32,40 @@ __global__ void matmul_tile(float *a, float *b, float *c, int n, int m, int p, i
     }
     
     for(tileIdx_m=0; tileIdx_m<NTB; tileIdx_m++){ 
-        //load bTile
-        bIdx = tileIdx_p*TW +ty;
-        col = tx + blockDim.x*tileIdx_m;
-        if(bIdx >= p || col >= m){
-            bTile[ty*TW+tx] = 0.;
-        }else{
-            bTile[ty*TW+tx] = b[bIdx*m + col]; //Copy to shared memory 
+        //load btile[ty][tx] with element [ty][tx] in tileIdx_m-th tile of b
+        if((blockIdx.x % NTB) == 0){
+            bIdx = tileIdx_p*TW +ty;
+            tileCol = tx + blockDim.x*(blockIdx.x+tileIdx_m);//FIXME BUG
+            if(bIdx >= p || tileCol >= m){
+                bTile[ty*TW+tx] = 0.;
+            }else{
+                bTile[ty*TW+tx] = b[bIdx*m + tileCol]; //Copy to shared memory 
+            }
+
+            __syncthreads();
+            for (int k=0; k<TW; k++){
+                 cvalue[tileIdx_m] += aTile[ty*TW+k] * bTile[k*TW+tx];
+                 //printf("bx = %d, by = %d, (tx = %d, ty = %d) @ tileIdx_m = %d : a=%.2f b=%.2f \n",blockIdx.x, blockIdx.y, tx, ty, tileIdx_m, aTile[ty*TW+k],bTile[k*TW+tx]);
+            }
+            //printf("bx = %d, by = %d, (tx = %d, ty = %d) @ tileIdx_m = %d: c= %.2f\n",blockIdx.x, blockIdx.y, tx, ty, tileIdx_m, cvalue[tileIdx_m]);
+            __syncthreads();
+            c[row*m + tileCol] = cvalue[tileIdx_m];
         }
 
-        __syncthreads();
-        for (int k=0; k<TW; k++){
-             cvalue[tileIdx_m] += aTile[ty*TW+k] * bTile[k*TW+tx];
-             //printf("bx = %d, by = %d, (tx = %d, ty = %d) @ tileIdx_m = %d : a=%.2f b=%.2f\n",blockIdx.x, blockIdx.y, tx, ty, tileIdx_m, aTile[ty*TW+k],bTile[k*TW+tx]);
-        }
-        __syncthreads();
+    }
+  }
 
-        if(row < n && col <m){
-            c[row*m + col] = cvalue[tileIdx_m];
+  if(row < n && col < m){
+    for(tileIdx_m=0; tileIdx_m<NTB; tileIdx_m++){ 
+        //load to C
+        if((blockIdx.x % NTB) == 0){
+            tileCol = tx + blockDim.x*(blockIdx.x+tileIdx_m);//FIXME BUG
+            c[row*m + tileCol] = cvalue[tileIdx_m];
         }
     }
   }
-   
+    
+  free(cvalue);
 }
 
 
@@ -59,7 +73,7 @@ void cpu_matrixmult(float *a,float *b, float *c, int n, int m, int p) {
 
   int index, indexa, indexb;
   float cvalue;
-  for(int col=0;col < m; col++)
+  for(int col=0;col < m; col++){
     for(int row=0;row < n; row++) {
       indexb = col;
       index = row * m + col;
@@ -69,6 +83,7 @@ void cpu_matrixmult(float *a,float *b, float *c, int n, int m, int p) {
       }
       c[index] -= cvalue; //NOTE: This calculates the diff between CPU and GPU computations.
     }
+  }
 }
 
 
@@ -100,10 +115,10 @@ int main(int argc, char *argv[]) {
     printf("No GPUs are visible\n");
     exit(-1);
   }
-  else printf("Device count = %d\n",gpucount);
-  if (argc<8) {
+  //else printf("Device count = %d\n",gpucount);
+  if (argc<10) {
     printf("# of inputs: %d\n", argc);
-    printf("Usage: Task1GPUsp <n> <m> <p> <block dim x> <block dim y> <grid dim x> <grid dim y> <tile width>\n");
+    printf("Usage: Task1GPUsp <n> <m> <p> <block dim x> <block dim y> <grid dim x> <grid dim y> <tile width> <Number of tiles>\n");
     exit (-1);
   }
 
@@ -130,13 +145,15 @@ int main(int argc, char *argv[]) {
       exit(-1);
   }
 
-  printf("A Matrix Dimension = %dx%d\n",n,p);
-  printf("B Matrix Dimension = %dx%d\n",p,m);
-  printf("C Matrix Dimension = %dx%d\n",n,m);
+  //printf("A Matrix Dimension = %dx%d\n",n,p);
+  //printf("B Matrix Dimension = %dx%d\n",p,m);
+  //printf("C Matrix Dimension = %dx%d\n",n,m);
   Grid_Dim_x = m/Block_Dim_x + (m % Block_Dim_x != 0);
   Grid_Dim_y = n/Block_Dim_y + (n % Block_Dim_y != 0);
-  NTB = Grid_Dim_x;
-  printf("Grid_x = %d Grid_y = %d NTB = %d\n", Grid_Dim_x,Grid_Dim_y,NTB);
+
+  NTB = atoi(argv[9]);
+
+  //printf("Grid_x = %d Grid_y = %d NTB = %d\n", Grid_Dim_x,Grid_Dim_y,NTB);
 
   dim3 Grid(Grid_Dim_x, Grid_Dim_y); //Grid structure
   dim3 Block(Block_Dim_x, Block_Dim_y); //Block structure
@@ -151,7 +168,7 @@ int main(int argc, char *argv[]) {
 
   srand(12345);
   //int p = n; //Used here only to illustrate proper initialization for non-square case
-  
+   
   //printf ("a\n");
   for(i=0;i < n;i++){
     for(j=0;j < p;j++) {
@@ -174,9 +191,27 @@ int main(int argc, char *argv[]) {
 
   // ------------- COMPUTATION DONE ON GPU ----------------------------
 
-  cudaMalloc((void**)&dev_a, size_a); // allocate memory on device
-  cudaMalloc((void**)&dev_b, size_b);
-  cudaMalloc((void**)&dev_c, size_c);
+  errorcode = cudaMalloc((void**)&dev_a, size_a); // allocate memory on device
+    if(errorcode != cudaSuccess)
+    {
+        // print the CUDA error message and exit
+        printf("cudaMalloc error: %s\n", cudaGetErrorString(errorcode));
+        exit(-1);
+    }
+  errorcode = cudaMalloc((void**)&dev_b, size_b);
+    if(errorcode != cudaSuccess)
+    {
+        // print the CUDA error message and exit
+        printf("cudaMalloc error: %s\n", cudaGetErrorString(errorcode));
+        exit(-1);
+    }
+  errorcode = cudaMalloc((void**)&dev_c, size_c);
+    if(errorcode != cudaSuccess)
+    {
+        // print the CUDA error message and exit
+        printf("cudaMalloc error: %s\n", cudaGetErrorString(errorcode));
+        exit(-1);
+    }
 
   cudaMemcpy(dev_a, a , size_a ,cudaMemcpyHostToDevice);
   cudaMemcpy(dev_b, b , size_b ,cudaMemcpyHostToDevice);
@@ -187,7 +222,28 @@ int main(int argc, char *argv[]) {
   cudaEventRecord(start, 0);
   // cudaEventSynchronize(start); // not needed
   size_t Ns = 2 * TW*TW * sizeof(float);
+  size_t heapSize = Grid_Dim_x * Grid_Dim_y * Block_Dim_x* Block_Dim_y * NTB * sizeof(float)/4; 
+  errorcode = cudaDeviceSetLimit(cudaLimitMallocHeapSize, heapSize);
+    if(errorcode != cudaSuccess)
+    {
+        // print the CUDA error message and exit
+        printf("cuda device heap error: %s\n", cudaGetErrorString(errorcode));
+        exit(-1);
+    }
+
   matmul_tile<<<Grid,Block, Ns>>>(dev_a, dev_b, dev_c, n, m, p, TW, NTB);
+
+    // make the host block until the device is finished with foo
+    cudaThreadSynchronize();
+
+    // check for error
+    errorcode = cudaGetLastError();
+    if(errorcode != cudaSuccess)
+    {
+        // print the CUDA error message and exit
+        printf("CUDA error: %s\n", cudaGetErrorString(errorcode));
+        exit(-1);
+    }
 
   cudaEventRecord(stop, 0); // instrument code to measure end time
   cudaEventSynchronize(stop);
@@ -207,7 +263,7 @@ int main(int argc, char *argv[]) {
   */
   // ------------- COMPUTATION DONE ON HOST CPU ----------------------------
   // DEBUGGING USE ONLY (AND FOR LIMITED NUMBERS OF TIMING RUNS)
-
+/*
   cudaEventRecord(start, 0); // use same timing
 
   cpu_matrixmult(a,b,c, n, m, p); // do calculation on host (NOTE: This computes the diff with GPU result.)
@@ -236,7 +292,7 @@ int main(int argc, char *argv[]) {
   error =  sumc/(n*suma*sumb);
   printf("Scaled error between GPU and CPU: %e\n", error);
   
-
+*/
 // -------------- clean up ---------------------------------------
 
   free(a);
