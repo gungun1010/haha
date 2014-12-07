@@ -1,0 +1,1 @@
+cmd_/home/leon/CUDAProj/finalProj/entry/fmem_1.6-0/fmem.ko := ld -r -m elf_x86_64 -T /usr/src/linux-headers-3.13.0-40-generic/scripts/module-common.lds --build-id  -o /home/leon/CUDAProj/finalProj/entry/fmem_1.6-0/fmem.ko /home/leon/CUDAProj/finalProj/entry/fmem_1.6-0/fmem.o /home/leon/CUDAProj/finalProj/entry/fmem_1.6-0/fmem.mod.o
