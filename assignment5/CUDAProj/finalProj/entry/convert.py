@@ -9,11 +9,17 @@ import binascii
 #number of meaningful bytes for GPU
 PATTERN_BYTES = 10
 
-def parse(ndb, gpusig, gpuvirus):
+#hardcoded virus pattern, obtained from clamav database
+#I am doing this just to create a infected file
+#to prove the detection function
+VIRUS_PATTERN = "cf63e7726e22a79a6027"
+ 
+def parse(ndb, gpusig, gpusigHu, gpuvirus):
     #sigs = []
     #virus = []
     f = open(ndb)
     fs = open(gpusig,'wb')
+    fsHu = open(gpusigHu, 'wb')
     fv = open(gpuvirus,'w')
     lines = f.readlines()
     f.close()
@@ -26,35 +32,46 @@ def parse(ndb, gpusig, gpuvirus):
         #info[0] is virus's name
         #info[3] is virus signature
     
-        sigs = (info[3][:offset])
-        virus = (info[0])
-        #print sigs
-        try:
-            sigsBytes = binascii.a2b_hex(sigs)
-            fs.write (sigsBytes)
-            fv.write (virus+os.linesep)
-        except TypeError:
-           next 
-        #print sigs[idx]
-        #print virus[idx]
-        #time.sleep(1)
+        if(len(info[3]) > offset): 
+            sigs = (info[3][:offset])
+            virus = (info[0])
+            #print sigs
+            try:
+                sigsBytes = binascii.a2b_hex(sigs)
+                fs.write (sigsBytes)
+                fsHu.write (sigs+os.linesep)
+                fv.write (virus+os.linesep)
+            except TypeError:
+               next 
+            #print sigs[idx]
+            #print virus[idx]
+            #time.sleep(1)
     fs.close()
     fv.close()
+    fsHu.close()
 
+def injectVirus (victimFile):
+    victim = open(victimFile,'ab')
+    virusPat = binascii.a2b_hex(VIRUS_PATTERN) 
+    victim.write(virusPat)
 
 def main():
     print "start converting for main"
-    ndb = "/home/leon/clamav/share/clamav/mainPack/main.ndb"
-    gpusig = "/home/leon/clamav/share/clamav/mainPack/mainGPUsig.bin"
-    gpuvirus = "/home/leon/clamav/share/clamav/mainPack/mainGPUvirus.ndb"
+    ndb = "./mainPack/main.ndb"
+    gpusig = "./mainPack/mainGPUsig.bin"
+    gpusigHu = "./mainPack/mainGPUsig.ndb"
+    gpuvirus = "./mainPack/mainGPUvirus.ndb"
 
-    parse(ndb, gpusig, gpuvirus)
+    parse(ndb, gpusig, gpusigHu, gpuvirus)
     
     print "start converting for daily"
-    ndb = "/home/leon/clamav/share/clamav/dailyPack/daily.ndb"
-    gpusig = "/home/leon/clamav/share/clamav/dailyPack/dailyGPUsig.bin"
-    gpuvirus = "/home/leon/clamav/share/clamav/dailyPack/dailyGPUvirus.ndb"
-    parse(ndb, gpusig, gpuvirus)
+    ndb = "./dailyPack/daily.ndb"
+    gpusig = "./dailyPack/dailyGPUsig.bin"
+    gpusigHu = "./dailyPack/dailyGPUsig.ndb"
+    gpuvirus = "./dailyPack/dailyGPUvirus.ndb"
+    parse(ndb, gpusig, gpusigHu, gpuvirus)
     
+    victimFile = "./files/badGuy.bin" 
+    injectVirus(victimFile) 
 main()
 

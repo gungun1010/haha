@@ -1,0 +1,15 @@
+PUA.Windows.DoubleExtension-rarpwd-2:*:(?i)((\.doc)|([ _.-](7z|avi|bmp|csv|doc|docx|gif|gz|jpeg|jpg|mov|mp3|mp4|mpg|pdf|png|pps|ppt|pptx|psd|rar|tar|tar\.gz|tif|tiff|txt|wav|xls|xlsx|zip)))[ _.-]*\.(application|bat|cmd|com|cpl|exe|gadget|inf|ins|inx|isu|job|jse|lnk|msc|msh|msh1|msh1xml|msh2|msh2xml|mshxml|msi|msp|mst|paf|pif|ps1|ps1xml|ps2|ps2xml|psc1|psc2|reg|rgs|scf|scr|sct|shb|shs|u3p|vb|vbe|vbs|vbscript|workflow|ws|wsf):*:*:*:*:*:*
+Suspect.DoubleExtension-rarpwd:*:[.]([Pp][Dd][Ff]|[Dd][Oo][Cc]|[Xx][Ll][Ss]|[Pp][Pp][Tt]|[Jj][Pp][Ee]?[Gg]|[Bb][Mm][Pp]|[Gg][Ii][Ff]|[Hh][Tt][Mm][Ll]|[Tt][Xx][Tt])[.]?[- _]{0,}[.]([Ee][Xx][Ee]|[Bb][Aa][Tt]|[Cc][Oo][Mm]|[Ll][Nn][Kk]|[Cc][Mm][Dd]|[Jj][Ss]|[Vv][Bb][Ss])$:*:*:*:*:*:*
+Rar.Suspect.ExecutableFax-rarpwd:*:(?i)(incomingfax|fax[0-9]{3,})\.(exe|scr)$:*:*:*:*:*:*
+Rar.Suspect.ExecutableScan-rarpwd:*:(?i)scan_?[0-9]{2,}\.(exe|scr|com)$:*:*:*:*:*:*
+Rar.Suspect.ExecutablePhoto-rarpwd-1:*:(?i)/photo\.(exe|scr)$:*:*:*:*:*:*
+Rar.Suspect.ExecutableCopy-rarpwd:*:(?i)(TT|original|scan|swift)[ _-]?COPY.(exe|scr|jar|html?|com)$:*:*:*:*:*:*
+Rar.Suspect.ExecutableProduct-rarpwd:*:(?i)product(ion)?[_ -](sample|detail|order|image|file)s?\.(exe|com|scr)$:*:*:*:*:*:*
+Rar.Suspect.ExecutablePurchaseOrder-rarpwd-2:*:(^|[^A-Za-z])P\.?O\.?[ _#-]?[0-9]+\.(exe|scr|com)$:*:*:*:*:*:*
+Rar.Suspect.ExecutablePurchaseOrder-rarpwd-3:*:(^|[^A-Za-z])P\.?(O|0)\.?[ _#-]?[0-9]+\.(exe|scr|com)$:*:*:*:*:*:*
+Rar.Suspect.ExecutablePhoto-rarpwd-2:*:(?i)(^|/)(my|sample)?[_ -]?photo([ _-][0-9]+)?\.(exe|scr|com)$:*:*:*:*:*:*
+Rar.Suspect.ExecutableAirfare-rarpwd-1:*:DeltaTicket(([_-][A-Z]{2}){2}[-_][A-Z0-9]{6,})?\.([Ee][Xx][Ee]|[Ss][Cc][Rr]|[Cc][Oo][Mm])$:*:*:*:*:*:*
+Rar.Suspect.MiscDoubleExtension-rarpwd-5:*:(?i)((\.doc)|([ _.-](7z|avi|bmp|csv|docx|gif|gz|jpeg|jpg|mov|mp3|mp4|mpg|pdf|png|pps|ppt|pptx|psd|rar|tar|tar\.gz|tif|tiff|txt|wav|xls|xlsx|zip)))[ _.-]*\.(action|air|apk|app|as|awk|bin|command|csh|deb|dmg|ipa|jar|jsx|ksh|nexe|osx|out|pkg|plx|prg|rpm|run|script|sh|swf)$:*:*:*:*:*:*
+Rar.Suspect.MacroDoubleExtension-rarpwd-4:*:(?i)((\.doc)|([ _.-](7z|avi|bmp|csv|docx|gif|gz|jpeg|jpg|mov|mp3|mp4|mpg|pdf|png|pps|ppt|pptx|psd|rar|tar|tar\.gz|tif|tiff|txt|wav|xls|xlsx|zip)))[ _.-]*\.(docm|dotm|otm|potm|ppam|ppsm|pptm|sldm|tlb|xlam|xlm|xlsm|xltm)$:*:*:*:*:*:*
+Rar.Suspect.FileName-rarpwd-4:*:(?i)(confidential|fiscal|inquiry|invoice|payment|plaint|purchase|receipt|shipment|urgent|vitae)[^/]{0,30}\.(bat|cmd|com|cpl|exe|pif|scr)$:*:*:*:*:*:*
+Rar.Suspect.WinDoubleExtension-rarpwd-7:*:(?i)((\.doc)|([ _.-](7z|avi|bmp|csv|docx|gif|gz|jpeg|jpg|mov|mp3|mp4|mpg|pdf|png|pps|ppt|pptx|psd|rar|tar|tar\.gz|tif|tiff|txt|wav|xls|xlsx|zip)))[ _.-]*\.(bat|cmd|com|cpl|exe|pif|scr|vb|vbe|vbs|vbscript)$:*:*:*:*:*:*

@@ -6,72 +6,140 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include </home/leon/clamav/include/clamav.h>
+#include <stdint.h>
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#define TAG_BITS 10
+#define TAG_BYTES 10
+#define GRID_X 32
+#define GRID_Y 32
+#define BLOCK_X 32
+#define BLOCK_Y 32
 
-const char *BYTE_CODE = "bytecode.cvd";
-const char *DAILY = "/dailyPack/dailyGPUsig.bin";
-const char *MAIN = "/mainPack/mainGPUsig.bin";
+#define ALPHABET_LEN 256
+#define NOT_FOUND patlen
+#define max(a, b) ((a < b) ? b : a)
 
-__global__ void patternMatching(char *set1, char *set2, char *set3){
+const char *DAILY = "./dailyPack/dailyGPUsig.bin";
+const char *MAIN = "./mainPack/mainGPUsig.bin";
+
+//all __device__ function are referenced 
+//from http://en.wikipedia.org/wiki/Boyer–Moore_string_search_algorithm
+//as the Boyer-Moore pattern matching is a well-established algorithm, 
+__device__ void make_delta1(int *delta1, uint8_t *pat, int32_t patlen) {
+
+    int i;
+    for (i=0; i < ALPHABET_LEN; i++) {
+        delta1[i] = NOT_FOUND;
+    }
+    for (i=0; i < patlen-1; i++) {
+        delta1[pat[i]] = patlen-1 - i;
+    }
 }
 
-//function to construct the signature database for GPU
-void loadSig (const char *fileName, char **buffer, size_t *size){
-    long lSize;
-    FILE *fp;
-    char *fullPath; 
-    
-    fullPath = (char *)malloc(100*sizeof(char));
-
-    //find file
-    strcpy(fullPath, (char *) cl_retdbdir());//this function returns where the signature file is
-    strcat(fullPath, "/");
-    strcat(fullPath, fileName);
-    fp = fopen (fullPath , "rb" );
-    if( !fp ) 
-        perror(fileName),exit(1);
-
-    //seek the end of file
-    fseek( fp , 0L , SEEK_END);
-    lSize = ftell( fp );
-    rewind( fp );
-    //printf("%ld\n",lSize);
-    (*size) = lSize;
-
-    /* allocate memory for entire content */
-    (*buffer) = (char *) calloc( 1, lSize+1 );
-    if( !(*buffer) ) 
-        fclose(fp),fputs("memory alloc fails",stderr),exit(1);
-
-    /* copy the file into the buffer */
-    if( 1!=fread( (*buffer) , lSize, 1 , fp) )
-        fclose(fp),free((*buffer)),fputs("entire read fails",stderr),exit(1);
-
-    fclose(fp);
-    //free(buffer);
+__device__ int is_prefix(uint8_t *word, int wordlen, int pos) {
+    int i;
+    int suffixlen = wordlen - pos;
+    // could also use the strncmp() library function here
+    for (i = 0; i < suffixlen; i++) {
+        if (word[i] != word[pos+i]) {
+            return 0;
+        }
+    }
+    return 1;
 }
 
-//function to load input file to scan
-void loadFile (const char *fileName, char **buffer, size_t *size){
+// length of the longest suffix of word ending on word[pos].
+// suffix_length("dddbcabc", 8, 4) = 2
+__device__ int suffix_length(uint8_t *word, int wordlen, int pos) {
+    int i;
+    // increment suffix length i to the first mismatch or beginning
+    // of the word
+    for (i = 0; (word[pos-i] == word[wordlen-1-i]) && (i < pos); i++);
+    return i;
+}
+
+__device__ void make_delta2(int *delta2, uint8_t *pat, int32_t patlen) {
+    int p;
+    int last_prefix_index = patlen-1;
+
+    // first loop
+    for (p=patlen-1; p>=0; p--) {
+        if (is_prefix(pat, patlen, p+1)) {
+            last_prefix_index = p+1;
+        }
+        delta2[p] = last_prefix_index + (patlen-1 - p);
+    }
+
+    // second loop
+    for (p=0; p < patlen-1; p++) {
+        int slen = suffix_length(pat, patlen, p);
+        if (pat[p - slen] != pat[patlen-1 - slen]) {
+            delta2[patlen-1 - slen] = patlen-1 - p + slen;
+        }
+    }
+}
+
+__device__ uint8_t* boyer_moore (uint8_t *string, uint32_t stringlen, uint8_t *pat, uint32_t patlen) {
+    int i;
+    int delta1[ALPHABET_LEN];
+    int *delta2 = (int *)malloc(patlen * sizeof(int));
+    make_delta1(delta1, pat, patlen);
+    make_delta2(delta2, pat, patlen);
+
+    // The empty pattern must be considered specially
+    if (patlen == 0) return string;
+
+    i = patlen-1;
+    while (i < stringlen) {
+        int j = patlen-1;
+        while (j >= 0 && (string[i] == pat[j])) {
+            --i;
+            --j;
+        }
+        if (j < 0) {
+            free(delta2);
+            return (string + i+1);
+        }
+
+        i += max(delta1[string[i]], delta2[j]);
+    }
+    free(delta2);
+    return NULL;
+}
+
+__global__ void patternMatching(uint8_t *set1, uint8_t *set2, uint8_t *fileBuf, int set1SigNum, int set2SigNum, int fileSize){
+    
+    //note: blockDim.x = blockDim.y
+    int col = threadIdx.x + blockDim.x * blockIdx.x;
+    int row = threadIdx.y + blockDim.y * blockIdx.y;
+    int idx = row*GRID_Y*BLOCK_Y + col;
+    uint8_t *found; 
+    
+    //make sure that the idx is within the range of total number of signatures
+    if(idx < set1SigNum){
+        found = boyer_moore(fileBuf,fileSize,set1+idx*TAG_BYTES,TAG_BYTES);
+
+        if(found != NULL){
+            printf("found pattern @ %d\n",idx); 
+        }
+    }
+
+    if(idx >= set1SigNum && idx < set2SigNum){
+        found = boyer_moore(fileBuf, fileSize, set2+(idx-set1SigNum)*TAG_BYTES, TAG_BYTES);
+
+        if(found != NULL){
+            printf("found pattern @ %d\n",(idx-set1SigNum)); 
+        }
+    }
+}
+
+//function to load input file and signature files to scan
+void loadFile (const char *fileName, uint8_t **buffer, size_t *size){
     long lSize;
     FILE *fp;
-    char *fullPath; 
     
-    fullPath = (char *)malloc(100*sizeof(char));
-    //find file
-    strcpy(fullPath, (char *) cl_retdbdir());//this function returns where the signature file is
-    //printf("%s\n",fullPath);
-    strcat(fullPath, "/");
-    //printf("%s\n",fullPath);
-    strcat(fullPath, fileName);
-    //printf("find signature file in %s\n",fullPath);
-    fp = fopen (fullPath , "rb" );
+    fp = fopen (fileName , "rb" );
     if( !fp ) perror(fileName),exit(1);
     
     //seek the beginning of file
@@ -83,7 +151,7 @@ void loadFile (const char *fileName, char **buffer, size_t *size){
     (*size) = lSize;
 
     /* allocate memory for entire content */
-    (*buffer) = (char *) calloc( 1, lSize+1 );
+    (*buffer) = (uint8_t *) calloc( 1, lSize+1 );
     if( !(*buffer) ) 
         fclose(fp),fputs("memory alloc fails",stderr),exit(1);
 
@@ -92,7 +160,6 @@ void loadFile (const char *fileName, char **buffer, size_t *size){
           fclose(fp),free((*buffer)),fputs("entire read fails",stderr),exit(1);
 
     fclose(fp);
-    //free(buffer);
 }
 /*
  * Exit codes:
@@ -104,126 +171,111 @@ void loadFile (const char *fileName, char **buffer, size_t *size){
 
 int main(int argc, char **argv)
 {
-	int fd, ret;
-	unsigned long int size = 0;
-	unsigned int sigs = 0;
-	long double mb;
-	const char *virname;
-	struct cl_engine *engine;
-
     int gpucount = 0; // Count of available GPUs
     //We only have 3701312 signatures
     //each thread get 1 signature, we need no more than 1024*1024 threads
     //grid size is then fixed to (32,32,1), and block size is (32,32,1)
 
-    int Grid_Dim_x = 256; //Grid dimension, x
-    int Grid_Dim_y = 256; //Grid dimension, y
-    int Block_Dim_x = 32; //Block dimension, x
-    int Block_Dim_y = 32; //Block dimension, y
+    int Grid_Dim_x = GRID_X; //Grid dimension, x
+    int Grid_Dim_y = GRID_Y; //Grid dimension, y
+    int Block_Dim_x = BLOCK_X; //Block dimension, x
+    int Block_Dim_y = BLOCK_Y; //Block dimension, y
+    cudaEvent_t start, stop; // using cuda events to measure time
+    float elapsed_time_ms; // which is applicable for asynchronous code also
     cudaError_t errorcode;
 
     //host buffer to store each signature dataset
-    char *byteCodeBuf; 
-    char *dailyBuf;
-    char *mainBuf;
-    char *devBcb, *devDb, *devMb;//device buffer correspoding to the host buffer
-    size_t sizeBcb, sizeDb, sizeMb;
+    uint8_t *dailyBuf;
+    uint8_t *mainBuf;
+    uint8_t *fileBuf;
+    uint8_t *devDb, *devMb, *devFb;//device buffer correspoding to the host buffer
+    size_t sizeDb, sizeMb, sizeFb;
    
+    if(argc != 2) {
+        printf("Usage: %s file\n", argv[0]);
+        return 2;
+    }
     // --------------------SET PARAMETERS AND DATA -----------------------
     //load signatures into host buffer
-    //loadFile(BYTE_CODE, &byteCodeBuf, &sizeBcb);
-    loadSig(DAILY, &dailyBuf, &sizeDb);
-    loadSig(MAIN, &mainBuf, &sizeMb);
+    loadFile(DAILY, &dailyBuf, &sizeDb);
+    loadFile(MAIN, &mainBuf, &sizeMb);
     
-    for(int i=0; i<11; i++){
-        printf("%x ", (unsigned char) dailyBuf[i]);
-    }
+    printf("loading signatures in %s\n",DAILY);
+    printf("loading signatures in %s\n",MAIN);
 
-    exit(1);
-    //loadFile(MAIN, &mainBuf, &sizeMb);
+    /* 
+    for(int i=0; i<11; i++){
+        printf("%x ", (unsigned uint8_t) dailyBuf[i]);
+    }
+    */
 
     errorcode = cudaGetDeviceCount(&gpucount);
     if (errorcode == cudaErrorNoDevice) {
         printf("No GPUs are visible\n");
         exit(-1);
     }
+    
+    //alloc mem to GPU
+    cudaMalloc((void**)&devDb, sizeDb*sizeof(uint8_t));
+    cudaMalloc((void**)&devMb, sizeMb*sizeof(uint8_t)); 
+
+    //copy sigs to GPU mem buffer
+    cudaMemcpy(devDb, dailyBuf, sizeDb ,cudaMemcpyHostToDevice);
+    cudaMemcpy(devMb, mainBuf, sizeMb ,cudaMemcpyHostToDevice);
+
+    
+    printf("Loaded %ld signatures.\n", (sizeDb+sizeMb)/TAG_BYTES);
 
     if (Block_Dim_x * Block_Dim_y > 1024) {
         printf("Error, too many threads in block\n");
         exit (-1);
     }
 
+    //loading files into file buffer
+    loadFile(argv[1], &fileBuf, &sizeFb);
+    
+    //alloc mem for files on GPU
+    cudaMalloc((void**)&devFb, sizeFb*sizeof(uint8_t)); 
+
+    //cp mem from host to GPU
+    cudaMemcpy(devFb, fileBuf, sizeFb ,cudaMemcpyHostToDevice);
+    
+    //declare GPU params
     dim3 Grid(Grid_Dim_x, Grid_Dim_y); //Grid structure
     dim3 Block(Block_Dim_x, Block_Dim_y); //Block structure
     
-    cudaMalloc((void**)&devBcb, sizeBcb*sizeof(char));
-    cudaMalloc((void**)&devDb, sizeDb*sizeof(char));
-    cudaMalloc((void**)&devMb, sizeMb*sizeof(char)); 
 
-    cudaMemcpy(devBcb, byteCodeBuf , sizeBcb ,cudaMemcpyHostToDevice);
-    cudaMemcpy(devDb, dailyBuf , sizeDb ,cudaMemcpyHostToDevice);
-    cudaMemcpy(devMb, mainBuf , sizeMb ,cudaMemcpyHostToDevice);
+    printf("right before calling GPU\n"); 
 
-    if(argc != 2) {
-        printf("Usage: %s file\n", argv[0]);
-        return 2;
+    cudaEventCreate(&start); // instrument code to measure start time
+    cudaEventCreate(&stop);
+
+    cudaEventRecord(start, 0);
+
+    patternMatching<<<Grid, Block>>>(devDb, devMb, devFb, sizeDb/TAG_BYTES, sizeMb/TAG_BYTES, sizeFb);
+
+    // make the host block until the device is finished with foo
+    cudaThreadSynchronize();
+
+    // check for error
+    errorcode = cudaGetLastError();
+    if(errorcode != cudaSuccess)
+    {
+        // print the CUDA error message and exit
+        printf("CUDA error: %s\n", cudaGetErrorString(errorcode));
+        exit(-1);
     }
 
-    if((fd = open(argv[1], O_RDONLY)) == -1) {
-        printf("Can't open file %s\n", argv[1]);
-        return 2;
-    }
-
-
-    if((ret = cl_init(CL_INIT_DEFAULT)) != CL_SUCCESS) {
-        printf("Can't initialize libclamav: %s\n", cl_strerror(ret));
-        return 2;
-    }
-
-    if(!(engine = cl_engine_new())) {
-        printf("Can't create new engine\n");
-        return 2;
-    }
-    /* load all available databases from default directory */
-    printf("loading signatures in %s\n",cl_retdbdir());
-    if((ret = cl_load(cl_retdbdir(), engine, &sigs, CL_DB_STDOPT)) != CL_SUCCESS) {
-        printf("cl_load: %s\n", cl_strerror(ret));
-        close(fd);
-            cl_engine_free(engine);
-        return 2;
-    }
-
-    printf("Loaded %u signatures.\n", sigs);
-
-    /* build engine */
-    if((ret = cl_engine_compile(engine)) != CL_SUCCESS) {
-        printf("Database initialization error: %s\n", cl_strerror(ret));;
-            cl_engine_free(engine);
-        close(fd);
-        return 2;
-    }
-
-    /* scan file descriptor */
-    if((ret =cl_scandesc(fd, &virname, &size, engine, CL_SCAN_STDOPT)) == CL_VIRUS) {
-        printf("Virus detected: %s\n", virname);
-    } else {
-        if(ret == CL_CLEAN) {
-            printf("No virus detected.\n");
-        } else {
-            printf("Error: %s\n", cl_strerror(ret));
-            cl_engine_free(engine);
-            close(fd);
-            return 2;
-        }
-    }
-    close(fd);
-
-    /* free memory */
-    cl_engine_free(engine);
-
-    /* calculate size of scanned data */
-    mb = size * (CL_COUNT_PRECISION / 1024) / 1024.0;
-    printf("Data scanned:%ld  %2.2Lf MB\n", size, mb);
-
-    return ret == CL_VIRUS ? 1 : 0;
+    cudaEventRecord(stop, 0); // instrument code to measure end time
+    cudaEventSynchronize(stop);
+    cudaEventElapsedTime(&elapsed_time_ms, start, stop );
+    
+    printf("Time to calculate results on GPU: %f ms.\n", elapsed_time_ms); // exec. time
+    free(mainBuf);
+    free(dailyBuf);
+    free(fileBuf);
+    cudaFree(devMb);
+    cudaFree(devDb);
+    cudaFree(devFb);
+    return 0;
 }
