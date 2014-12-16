@@ -1,6 +1,0 @@
-Device count = 1
-A Matrix Dimension = 8192x8192
-B Matrix Dimension = 8192x8192
-C Matrix Dimension = 8192x8192
-Grid_x = 256 Grid_y = 256 NTB = 256
-CUDA error: an illegal memory access was encountered
